@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Descripción de Usuario</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+  <h1 class="mb-4">Descripción de Usuario</h1>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-4">Datos del Usuario</h5>
+
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <strong>ID:</strong>
+        </div>
+        <div class="col-md-9">
+          <span th:text="${usuario.id}"></span>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <strong>Email:</strong>
+        </div>
+        <div class="col-md-9">
+          <span th:text="${usuario.email}"></span>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <strong>Nombre:</strong>
+        </div>
+        <div class="col-md-9">
+          <span th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}"></span>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <strong>Fecha de Nacimiento:</strong>
+        </div>
+        <div class="col-md-9">
+          <span th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <a href="/registrados" class="btn btn-secondary">Volver al Listado</a>
+  </div>
+</div>
+</body>
+</html>

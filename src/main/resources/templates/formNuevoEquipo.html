@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: head (titulo='Crear Nuevo Equipo')"></head>
+
+<body>
+<div th:replace="~{navbar}"></div>
+
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class="col">
+            <h2>Crear Nuevo Equipo</h2>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            <form method="post" th:action="@{/equipos/nuevo}" th:object="${equipo}">
+                <div class="form-group">
+                    <label for="nombre">Nombre del equipo:</label>
+                    <input type="text"
+                           class="form-control"
+                           id="nombre"
+                           name="nombre"
+                           th:field="*{nombre}"
+                           required
+                           placeholder="Introduce el nombre del equipo"/>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Crear Equipo</button>
+                <a class="btn btn-secondary" th:href="@{/equipos}">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments::javascript"/>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Equipo</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Editar Equipo</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" th:action="@{/equipos/{id}/editar(id=${equipo.id})}" th:object="${equipo}">
+            <div class="form-group">
+              <label for="nombre">Nombre del Equipo:</label>
+              <input type="text"
+                     class="form-control"
+                     id="nombre"
+                     name="nombre"
+                     th:field="*{nombre}"
+                     placeholder="Ingrese el nombre del equipo"
+                     required>
+            </div>
+
+            <div class="form-group mt-3">
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Guardar Cambios
+              </button>
+              <a th:href="@{/equipos}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html>
