@@ -38,5 +38,24 @@ public class HomeController {
 
         return "about"; // plantilla about.html
     }
+
+    // Página de perfil del usuario (/perfil)
+    @GetMapping("/perfil")
+    public String perfilUsuario(Model model) {
+        Long idUsuario = managerUserSession.usuarioLogeado();
+
+        // Si no hay usuario logueado, redirigir al login
+        if (idUsuario == null) {
+            return "redirect:/login";
+        }
+
+        // Obtener los datos del usuario
+        UsuarioData usuario = usuarioService.findById(idUsuario);
+
+        // Agregar el usuario al modelo
+        model.addAttribute("usuario", usuario);
+
+        return "perfil"; // plantilla perfil.html
+    }
 }
 

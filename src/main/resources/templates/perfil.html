@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head (titulo='Mi Perfil')"></head>
+
+<body>
+<div th:replace="~{navbar}"></div>
+
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class="col">
+            <h2>Mi Perfil</h2>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Campo</th>
+                    <th>Valor</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>Id</strong></td>
+                    <td th:text="${usuario.id}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Email</strong></td>
+                    <td th:text="${usuario.email}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Nombre</strong></td>
+                    <td th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Fecha de Nacimiento</strong></td>
+                    <td th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo de Cuenta</strong></td>
+                    <td>
+                        <span th:if="${usuario.admin}" class="badge bg-warning text-dark">Administrador</span>
+                        <span th:unless="${usuario.admin}" class="badge bg-secondary">Usuario Regular</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <p>
+                <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Ver mis tareas</a>
+                <a class="btn btn-link" href="/logout">Salir</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments::javascript"/>
+
+</body>
+</html>
