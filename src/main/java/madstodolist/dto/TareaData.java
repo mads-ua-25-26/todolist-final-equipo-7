@@ -10,6 +10,7 @@ public class TareaData implements Serializable {
 
     private Long id;
     private String titulo;
+    private String descripcion;
     private Long usuarioId;  // Esta es la ID del usuario asociado
 
     // Getters y setters
@@ -28,6 +29,14 @@ public class TareaData implements Serializable {
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Long getUsuarioId() {
