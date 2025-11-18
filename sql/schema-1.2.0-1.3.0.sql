@@ -1,0 +1,2 @@
+-- Migración de 1.2.0 a 1.3.0
+-- No se requieren cambios en el esquema de base de datos.
