@@ -39,8 +39,8 @@ public class TareaServiceTest {
         UsuarioData usuarioNuevo = usuarioService.registrar(usuario);
 
         // Y añadimos dos tareas asociadas a ese usuario
-        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche");
-        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI");
+        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null);
+        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null);
 
         // Devolvemos los ids del usuario y de la primera tarea añadida
         Map<String, Long> ids = new HashMap<>();
@@ -58,7 +58,7 @@ public class TareaServiceTest {
 
         // WHEN
         // creamos una nueva tarea asociada al usuario,
-        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS");
+        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null);
 
         // THEN
         // al recuperar la lista de tareas del usuario, la nueva tarea
@@ -101,7 +101,7 @@ public class TareaServiceTest {
         // WHEN
         // modificamos la tarea correspondiente al identificador,
 
-        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche");
+        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null);
 
         // THEN
         // al buscar por el identificador en la base de datos se devuelve la tarea modificada

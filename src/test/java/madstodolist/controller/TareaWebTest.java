@@ -51,8 +51,8 @@ public class TareaWebTest {
         usuario = usuarioService.registrar(usuario);
 
         // Y añadimos dos tareas asociadas a ese usuario
-        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuario.getId(), "Lavar coche");
-        tareaService.nuevaTareaUsuario(usuario.getId(), "Renovar DNI");
+        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuario.getId(), "Lavar coche", null);
+        tareaService.nuevaTareaUsuario(usuario.getId(), "Renovar DNI", null);
 
         // Devolvemos los ids del usuario y de la primera tarea añadida
         Map<String, Long> ids = new HashMap<>();
@@ -129,7 +129,8 @@ public class TareaWebTest {
         String urlRedirect = "/usuarios/" + usuarioId.toString() + "/tareas";
 
         this.mockMvc.perform(post(urlPost)
-                        .param("titulo", "Estudiar examen MADS"))
+                        .param("titulo", "Estudiar examen MADS")
+                        .param("descripcion", ""))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(urlRedirect));
 
@@ -188,7 +189,8 @@ public class TareaWebTest {
         String urlRedirect = "/usuarios/" + usuarioId + "/tareas";
 
         this.mockMvc.perform(post(urlEditar)
-                        .param("titulo", "Limpiar cristales coche"))
+                        .param("titulo", "Limpiar cristales coche")
+                        .param("descripcion", ""))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(urlRedirect));
 

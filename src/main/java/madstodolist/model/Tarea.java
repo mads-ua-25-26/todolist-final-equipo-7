@@ -16,6 +16,7 @@ public class Tarea implements Serializable {
     private Long id;
     @NotNull
     private String titulo;
+    private String descripcion;
 
     @NotNull
     // Relación muchos-a-uno entre tareas y usuario
@@ -35,6 +36,13 @@ public class Tarea implements Serializable {
         setUsuario(usuario); // Esto añadirá la tarea a la lista de tareas del usuario
     }
 
+    // Constructor con descripción
+    public Tarea(Usuario usuario, String titulo, String descripcion) {
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        setUsuario(usuario); // Esto añadirá la tarea a la lista de tareas del usuario
+    }
+
     // Getters y setters básicos
 
     public Long getId() {
@@ -51,6 +59,14 @@ public class Tarea implements Serializable {
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     // Getters y setters de la relación muchos-a-uno con Usuario
