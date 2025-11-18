@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 75AMyrpkpUf1Wi8g8a1uqLdwivIYch50vGYKoPBgORdwUYEcxA7XiXYO4Rfgafp
+\restrict iAvkiXKKNgmxB9XeO6PmCoy8hyuccZnduFdLS61sAPZEzsodGzoHNyCmMChkfmB
 
 -- Dumped from database version 13.22 (Debian 13.22-1.pgdg13+1)
 -- Dumped by pg_dump version 13.22 (Debian 13.22-1.pgdg13+1)
@@ -74,7 +74,8 @@ ALTER SEQUENCE public.equipos_id_seq OWNED BY public.equipos.id;
 CREATE TABLE public.tareas (
     id bigint NOT NULL,
     titulo character varying(255) NOT NULL,
-    usuario_id bigint NOT NULL
+    usuario_id bigint NOT NULL,
+    descripcion character varying(255)
 );
 
 
@@ -219,5 +220,5 @@ ALTER TABLE ONLY public.equipo_usuario
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 75AMyrpkpUf1Wi8g8a1uqLdwivIYch50vGYKoPBgORdwUYEcxA7XiXYO4Rfgafp
+\unrestrict iAvkiXKKNgmxB9XeO6PmCoy8hyuccZnduFdLS61sAPZEzsodGzoHNyCmMChkfmB
 
