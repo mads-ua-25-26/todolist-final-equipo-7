@@ -31,13 +31,13 @@ public class TareaService {
     private ModelMapper modelMapper;
 
     @Transactional
-    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea) {
+    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea) {
         logger.debug("Añadiendo tarea " + tituloTarea + " al usuario " + idUsuario);
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         if (usuario == null) {
             throw new TareaServiceException("Usuario " + idUsuario + " no existe al crear tarea " + tituloTarea);
         }
-        Tarea tarea = new Tarea(usuario, tituloTarea);
+        Tarea tarea = new Tarea(usuario, tituloTarea, descripcionTarea);
         tareaRepository.save(tarea);
         return modelMapper.map(tarea, TareaData.class);
     }
@@ -67,13 +67,14 @@ public class TareaService {
     }
 
     @Transactional
-    public TareaData modificaTarea(Long idTarea, String nuevoTitulo) {
+    public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion) {
         logger.debug("Modificando tarea " + idTarea + " - " + nuevoTitulo);
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
         if (tarea == null) {
             throw new TareaServiceException("No existe tarea con id " + idTarea);
         }
         tarea.setTitulo(nuevoTitulo);
+        tarea.setDescripcion(nuevaDescripcion);
         tarea = tareaRepository.save(tarea);
         return modelMapper.map(tarea, TareaData.class);
     }
