@@ -1,5 +1,4 @@
-<!-- navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+<nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="/about">ToDoList</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -8,21 +7,18 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
-
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav">
-        <!-- Enlace a Tareas (solo si está loguea do y usuarioId no es null) -->
+      <ul class="navbar-nav align-items-center">
         <li th:if="${isLoggedIn and usuarioId != null}" class="nav-item">
           <a class="nav-link" th:href="@{/usuarios/{id}/tareas(id=${usuarioId})}">Tareas</a>
         </li>
-        <li>
+        <li class="nav-item">
           <a class="nav-link" th:href="@{/registrados}">Usuarios</a>
         </li>
         <li th:if="${isLoggedIn and usuarioId != null}" class="nav-item">
           <a class="nav-link" th:href="@{/equipos}">Equipos</a>
         </li>
 
-        <!-- Si el usuario está logueado: Dropdown con nombre -->
         <li th:if="${isLoggedIn}" class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
              role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -38,15 +34,58 @@
           </ul>
         </li>
 
-        <!-- Si el usuario NO está logueado: Login y Registro -->
         <li th:if="${!isLoggedIn}" class="nav-item">
           <a class="nav-link" href="/login">Login</a>
         </li>
         <li th:if="${!isLoggedIn}" class="nav-item">
           <a class="nav-link" href="/registro">Registro</a>
         </li>
+
+        <li class="nav-item ms-2">
+          <button class="btn nav-link" id="bd-theme" type="button" onclick="toggleTheme()" title="Cambiar tema">
+            <i id="theme-icon" class="bi bi-circle-half"></i>
+          </button>
+        </li>
       </ul>
     </div>
   </div>
 </nav>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Función que se ejecuta al pulsar el botón
+  function toggleTheme() {
+    // Leemos el tema actual del atributo html
+    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+    // Si es oscuro lo pasamos a claro, y viceversa
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Aplicamos el cambio
+    document.documentElement.setAttribute('data-bs-theme', newTheme);
+    // Guardamos la preferencia en el navegador
+    localStorage.setItem('theme', newTheme);
+
+    // Actualizamos el icono
+    updateIcon(newTheme);
+  }
+
+  function updateIcon(theme) {
+    const icon = document.getElementById('theme-icon');
+    // Limpiamos clases anteriores
+    icon.className = 'bi';
+
+    if (theme === 'dark') {
+      icon.classList.add('bi-moon-stars-fill'); // Icono luna
+    } else {
+      icon.classList.add('bi-sun-fill');        // Icono sol
+    }
+  }
+
+  // Al cargar la página, asegurarnos que el icono coincida con el tema actual
+  document.addEventListener('DOMContentLoaded', () => {
+    // Recuperamos el tema que puso el script del head (fragments.html)
+    const savedTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    updateIcon(savedTheme);
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
