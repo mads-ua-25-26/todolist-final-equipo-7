@@ -147,4 +147,48 @@ public class TareaServiceTest {
         assertThat(tareaService.usuarioContieneTarea(usuarioId,tareaId)).isTrue();
     }
 
+    @Test
+    public void testNuevaTareaSeAñadeAlFinal() {
+        // GIVEN
+        // Un usuario con 2 tareas creadas por el método auxiliar (posiciones 1 y 2)
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+
+        // WHEN
+        // Creamos una tercera tarea
+        TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null);
+
+        // THEN
+        // Al recuperar las tareas, la nueva está en la última posición (índice 2)
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+
+        assertThat(tareas).hasSize(3);
+        // Verificamos que la última de la lista es la que acabamos de crear
+        assertThat(tareas.get(2).getId()).isEqualTo(tarea3.getId());
+    }
+
+    @Test
+    public void testActualizarOrden() {
+        // GIVEN
+        // Un usuario con 2 tareas: "Lavar coche" (id1, pos 1) y "Renovar DNI" (id2, pos 2)
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+
+        List<TareaData> tareasIniciales = tareaService.allTareasUsuario(usuarioId);
+        Long idTarea1 = tareasIniciales.get(0).getId(); // Lavar coche
+        Long idTarea2 = tareasIniciales.get(1).getId(); // Renovar DNI
+
+        // WHEN
+        // Cambiamos el orden para que la segunda pase a ser la primera
+        // Enviamos una lista con [idTarea2, idTarea1]
+        tareaService.actualizarOrden(usuarioId, java.util.Arrays.asList(idTarea2, idTarea1));
+
+        // THEN
+        // Al recuperar las tareas, el orden ha cambiado
+        List<TareaData> tareasReordenadas = tareaService.allTareasUsuario(usuarioId);
+
+        assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2); // Renovar DNI ahora es primera
+        assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
+    }
+
 }
