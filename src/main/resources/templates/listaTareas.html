@@ -73,7 +73,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
 <!-- Estilos para drag and drop -->
+<style>
+    /* Evita que el texto se seleccione al arrastrar */
+    .sortable-item {
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none;    /* Firefox */
+        -ms-user-select: none;     /* IE10+/Edge */
+        user-select: none;         /* Standard */
+    }
 
+    /* Opcional: Cambia el cursor para indicar que se puede agarrar */
+    .drag-handle {
+        cursor: grab;
+    }
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+</style>
 
 <!-- Scripts -->
 <script type="text/javascript">
