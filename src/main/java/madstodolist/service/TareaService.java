@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.modelmapper.ModelMapper;
+import madstodolist.repository.EtiquetaRepository;
+import madstodolist.model.Etiqueta;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,8 @@ public class TareaService {
     private TareaRepository tareaRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    EtiquetaRepository etiquetaRepository;
 
     @Transactional
     public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea) {
@@ -154,6 +158,20 @@ public class TareaService {
                     tareaRepository.save(tarea);
                 }
             }
+        }
+    }
+
+
+    @Transactional
+    public void asignarEtiqueta(Long idTarea, Long idEtiqueta) {
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        Etiqueta etiqueta = etiquetaRepository.findById(idEtiqueta).orElse(null);
+
+        if (tarea != null && etiqueta != null) {
+            tarea.addEtiqueta(etiqueta);
+            tareaRepository.save(tarea);
+        } else {
+            throw new TareaServiceException("No se encontró la tarea o la etiqueta");
         }
     }
 }

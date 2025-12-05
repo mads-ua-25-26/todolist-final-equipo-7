@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
+import madstodolist.repository.EtiquetaRepository;
+import madstodolist.model.Etiqueta;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,12 @@ public class TareaServiceTest {
 
     @Autowired
     TareaService tareaService;
+
+    @Autowired
+    EtiquetaService etiquetaService;
+
+    @Autowired
+    madstodolist.repository.TareaRepository tareaRepository;
 
     // Método para inicializar los datos de prueba en la BD
     // Devuelve un mapa con los identificadores del usuario y de la primera tarea añadida
@@ -138,16 +146,6 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void asignarEtiquetaATarea(){
-
-        Map<String, Long> ids = addUsuarioTareasBD();
-        Long usuarioId = ids.get("usuarioId");
-        Long tareaId = ids.get("tareaId");
-
-        assertThat(tareaService.usuarioContieneTarea(usuarioId,tareaId)).isTrue();
-    }
-
-    @Test
     public void testNuevaTareaSeAñadeAlFinal() {
         // GIVEN
         // Un usuario con 2 tareas creadas por el método auxiliar (posiciones 1 y 2)
@@ -189,6 +187,23 @@ public class TareaServiceTest {
 
         assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2); // Renovar DNI ahora es primera
         assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
+    }
+
+
+    @Test
+    public void asignarEtiquetaATarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta("Urgente", "red");
+
+        // WHEN
+        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
+
+        // THEN
+        madstodolist.model.Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(1);
+        assertThat(tareaBD.getEtiquetas().contains(etiqueta)).isTrue();
     }
 
 }
