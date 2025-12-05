@@ -245,4 +245,43 @@ public class TareaTest {
         Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD.getTitulo()).isEqualTo(tarea.getTitulo());
     }
+
+    @Test
+    public void comprobarPosicionTarea() {
+        // GIVEN
+        Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
+        Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
+
+        // WHEN
+        tarea.setPosition(5);
+
+        // THEN
+        assertThat(tarea.getPosition()).isEqualTo(5);
+    }
+
+    @Test
+    @Transactional
+    public void guardarTareaConPosicionEnBaseDatos() {
+        // GIVEN
+        // Un usuario en la base de datos
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        // Creamos una tarea y le asignamos una posición
+        Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
+        tarea.setPosition(3);
+
+        // WHEN
+        // Guardamos la tarea
+        tareaRepository.save(tarea);
+
+        // THEN
+        // Recuperamos la tarea y verificamos que la posición se ha guardado
+        assertThat(tarea.getId()).isNotNull();
+        Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
+        assertThat(tareaBD).isNotNull();
+        assertThat(tareaBD.getPosition()).isEqualTo(3);
+    }
+
+
 }
