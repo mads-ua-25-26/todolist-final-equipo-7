@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
+import madstodolist.model.Etiqueta;
 
 import java.util.Set;
 
@@ -23,6 +24,9 @@ public class TareaTest {
 
     @Autowired
     TareaRepository tareaRepository;
+
+    @Autowired
+    EtiquetaRepository etiquetaRepository;
 
     //
     // Tests modelo Tarea en memoria, sin la conexión con la BD
@@ -283,5 +287,31 @@ public class TareaTest {
         assertThat(tareaBD.getPosition()).isEqualTo(3);
     }
 
+    @Test
+    @Transactional
+    public void añadirEtiquetaAUnaTarea() {
+        // GIVEN
+        // Un usuario, una tarea y una etiqueta en la BD
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tarea = new Tarea(usuario, "Comprar leche");
+        tareaRepository.save(tarea);
+
+        Etiqueta etiqueta = new Etiqueta("Compras", "green");
+        etiquetaRepository.save(etiqueta);
+
+        // WHEN
+        // Asociamos la etiqueta a la tarea
+        tarea.addEtiqueta(etiqueta);
+        // Guardamos la tarea (la relación se guarda en la tabla intermedia)
+        tareaRepository.save(tarea);
+
+        // THEN
+        // Al recuperar la tarea, contiene la etiqueta
+        Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(1);
+        assertThat(tareaBD.getEtiquetas()).contains(etiqueta);
+    }
 
 }
