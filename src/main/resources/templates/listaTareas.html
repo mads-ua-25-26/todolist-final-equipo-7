@@ -18,28 +18,43 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <th style="width: 40px;"></th>
                     <th>Id</th>
                     <th>Tarea</th>
                     <th>Descripción</th>
                     <th>Acción</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:each="tarea: ${tareas}">
+                <tbody id="sortable-tareas">
+                <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item">
+                    <td class="drag-handle" style="cursor: move; text-align: center;">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="color: #999;">
+                            <circle cx="4" cy="3" r="1.5"/>
+                            <circle cx="12" cy="3" r="1.5"/>
+                            <circle cx="4" cy="8" r="1.5"/>
+                            <circle cx="12" cy="8" r="1.5"/>
+                            <circle cx="4" cy="13" r="1.5"/>
+                            <circle cx="12" cy="13" r="1.5"/>
+                        </svg>
+                    </td>
                     <td th:text="${tarea.id}"></td>
                     <td th:text="${tarea.titulo}"></td>
                     <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
-                    <td><a class="btn btn-primary btn-xs" th:href="@{/tareas/{id}/editar(id=${tarea.id})}"/>editar</a>
-                        <button class="btn btn-danger btn-xs" onmouseover="" style="cursor: pointer;"
-                           th:onclick="'del(\'/tareas/' + ${tarea.id} + '\')'">borrar</button>
+                    <td>
+                        <a class="btn btn-primary btn-xs" th:href="@{/tareas/{id}/editar(id=${tarea.id})}">editar</a>
+                        <button class="btn btn-danger btn-xs" style="cursor: pointer;"
+                                th:onclick="'del(\'/tareas/' + ${tarea.id} + '\')'">borrar</button>
                     </td>
                 </tr>
                 </tbody>
             </table>
-            <p><a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}"> Nueva tarea</a>
-            <a class="btn btn-link" href="/logout">Salir</a></p>
+            <p>
+                <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">Nueva tarea</a>
+                <a class="btn btn-link" href="/logout">Salir</a>
+            </p>
         </div>
     </div>
+
     <div class="row mt-2">
         <div class="col">
             <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${!#strings.isEmpty(mensaje)}">
@@ -52,20 +67,95 @@
     </div>
 </div>
 
-
-</div>
-
 <div th:replace="fragments::javascript"/>
 
-<!-- Lanzamos una petición DELETE por JavaScript para borrar una tarea -->
+<!-- SortableJS CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
+<!-- Estilos para drag and drop -->
+<style>
+    /* Evita que el texto se seleccione al arrastrar */
+    .sortable-item {
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none;    /* Firefox */
+        -ms-user-select: none;     /* IE10+/Edge */
+        user-select: none;         /* Standard */
+    }
+
+    /* Opcional: Cambia el cursor para indicar que se puede agarrar */
+    .drag-handle {
+        cursor: grab;
+    }
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+</style>
+
+<!-- Scripts -->
 <script type="text/javascript">
+    // Función para borrar tarea
     function del(urlBorrar) {
         if (confirm('¿Estás seguro/a de que quieres borrar la tarea?')) {
             fetch(urlBorrar, {
                 method: 'DELETE'
             }).then((res) => location.reload());
         }
+    }
+
+    // Inicializar SortableJS cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('sortable-tareas');
+
+        if (tbody && tbody.querySelectorAll('tr[data-id]').length > 0) {
+            Sortable.create(tbody, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                chosenClass: 'sortable-chosen',
+                forceFallback: true, // Mejor soporte para touch
+
+                // Evento al soltar la tarea
+                onEnd: function(evt) {
+                    // Verificar si realmente cambió de posición
+                    if (evt.oldIndex === evt.newIndex) {
+                        return;
+                    }
+
+                    // Obtener el nuevo orden de IDs
+                    const ordenTareas = Array.from(tbody.querySelectorAll('tr[data-id]'))
+                        .map(tr => parseInt(tr.getAttribute('data-id')));
+
+                    // Enviar al servidor
+                    guardarOrden(ordenTareas);
+                }
+            });
+        }
+    });
+
+    // Función para guardar el nuevo orden en el servidor
+    function guardarOrden(ordenTareas) {
+        fetch('/tareas/reordenar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orden: ordenTareas })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al guardar el orden');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Orden guardado correctamente');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el orden de las tareas. Por favor, recarga la página.');
+            });
     }
 </script>
 

@@ -12,6 +12,7 @@ public class TareaData implements Serializable {
     private String titulo;
     private String descripcion;
     private Long usuarioId;  // Esta es la ID del usuario asociado
+    private Integer position;  // Cambiado de "posicion" a "position" para consistencia
 
     // Getters y setters
 
@@ -45,6 +46,14 @@ public class TareaData implements Serializable {
 
     public void setUsuarioId(Long usuarioId) {
         this.usuarioId = usuarioId;
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(Integer position) {
+        this.position = position;
     }
 
     // Sobreescribimos equals y hashCode para que dos tareas sean iguales

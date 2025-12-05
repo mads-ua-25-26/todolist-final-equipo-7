@@ -6,15 +6,20 @@ import madstodolist.controller.exception.TareaNotFoundException;
 import madstodolist.dto.TareaData;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.TareaService;
+import madstodolist.service.TareaServiceException;
 import madstodolist.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class TareaController {
@@ -118,6 +123,43 @@ public class TareaController {
 
         tareaService.borraTarea(idTarea);
         return "";
+    }
+
+    @PostMapping("/tareas/reordenar")
+    @ResponseBody
+    public ResponseEntity<?> reordenarTareas(@RequestBody Map<String, List<Long>> payload,
+                                             HttpSession session) {
+        // Verificar que el usuario está autenticado
+        Long idUsuario = managerUserSession.usuarioLogeado();
+
+        if (idUsuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Usuario no autenticado"));
+        }
+
+        List<Long> orden = payload.get("orden");
+
+        if (orden == null || orden.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Orden inválido"));
+        }
+
+        try {
+            tareaService.actualizarOrden(idUsuario, orden);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("mensaje", "Orden actualizado correctamente");
+
+            return ResponseEntity.ok(response);
+
+        } catch (TareaServiceException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al actualizar el orden"));
+        }
     }
 }
 

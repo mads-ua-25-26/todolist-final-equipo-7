@@ -17,6 +17,8 @@ public class Tarea implements Serializable {
     @NotNull
     private String titulo;
     private String descripcion;
+    @Column(name = "position")
+    private Integer position;
 
     @NotNull
     // Relación muchos-a-uno entre tareas y usuario
@@ -102,5 +104,12 @@ public class Tarea implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(titulo, usuario);
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+    public void setPosition(Integer position) {
+        this.position = position;
     }
 }

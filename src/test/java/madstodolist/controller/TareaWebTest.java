@@ -10,12 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -201,5 +204,62 @@ public class TareaWebTest {
 
         this.mockMvc.perform(get(urlListado))
                 .andExpect(content().string(containsString("Limpiar cristales coche")));
+    }
+
+    @Test
+    public void getEditarTareaDevuelveForm() throws Exception {
+        // GIVEN
+        // Un usuario con una tarea en la BD
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        // Simulamos usuario logeado
+        when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
+
+        // WHEN
+        // realizamos la petición GET al endpoint de editar tarea
+        String url = "/tareas/" + tareaId + "/editar";
+
+        // THEN
+        // se devuelve la vista del formulario y contiene el título de la tarea
+        this.mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("formEditarTarea"))
+                .andExpect(content().string(containsString("Lavar coche")));
+    }
+
+    @Test
+    public void reordenarTareasActualizaOrden() throws Exception {
+        // GIVEN
+        // Un usuario con dos tareas
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+
+        // Recuperamos las tareas para obtener sus IDs reales
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+        Long idTarea1 = tareas.get(0).getId(); // Lavar coche (Posición original 1)
+        Long idTarea2 = tareas.get(1).getId(); // Renovar DNI (Posición original 2)
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
+
+        // Construimos un JSON manual invirtiendo el orden: la tarea 2 va primero
+        // Payload: {"orden": [id2, id1]}
+        String jsonPayload = String.format("{\"orden\": [%d, %d]}", idTarea2, idTarea1);
+
+        // WHEN
+        // Enviamos la petición POST para reordenar
+        this.mockMvc.perform(post("/tareas/reordenar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                // THEN
+                // Esperamos un estado OK y una respuesta JSON de éxito
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // Verificamos directamente en el servicio que el orden ha cambiado en BD
+        List<TareaData> tareasReordenadas = tareaService.allTareasUsuario(usuarioId);
+        assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2);
+        assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1);
     }
 }
