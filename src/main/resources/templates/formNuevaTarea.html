@@ -10,27 +10,29 @@
 
     <form method="post" th:action="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}" th:object="${tareaData}">
         <div class="col-6">
-        <div class="form-group">
-            <label for="titulo">Título de la tarea:</label>
-            <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
-        </div>
-        <div class="form-group">
-            <label for="descripcion">Descripción de la tarea:</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="etiqueta">Etiqueta:</label>
-            <select class="form-control" id="etiqueta" name="etiquetaId">
-                <option value="">Sin etiqueta</option>
+            <div class="form-group">
+                <label for="titulo">Título de la tarea:</label>
+                <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
+            </div>
+            <div class="form-group">
+                <label for="etiqueta">Etiqueta:</label>
+                <select class="form-control" id="etiqueta" name="etiquetaId">
+                    <option value="">Sin etiqueta</option>
 
-                <option th:each="etiqueta : ${etiquetas}"
-                        th:value="${etiqueta.id}"
-                        th:text="${etiqueta.nombre}">
-                </option>
-            </select>
-        </div>
-        <button class="btn btn-primary" type="submit">Crear tarea</button>
-        <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Cancelar</a>
+                    <option th:each="etiqueta : ${etiquetas}"
+                            th:value="${etiqueta.id}"
+                            th:text="${etiqueta.nombre}">
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción de la tarea:</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
+            </div>
+            <p>
+                <button class="btn btn-primary" type="submit">Crear tarea</button>
+                <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Cancelar</a>
+            </p>
         </div>
     </form>
 </div>

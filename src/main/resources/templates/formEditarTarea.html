@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head th:replace="fragments :: head (titulo='Editar Tarea')"></head>
 
 <body>
 <div class="container-fluid">
@@ -10,16 +10,28 @@
 
     <form method="post" th:action="@{/tareas/{id}/editar(id=${tarea.id})}" th:object="${tareaData}">
         <div class="col-6">
-        <div class="form-group">
-            <label for="titulo">Título de la tarea:</label>
-            <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
-        </div>
-        <div class="form-group">
-            <label for="descripcion">Descripción de la tarea:</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit">Modificar tarea</button>
-        <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}">Cancelar</a>
+            <div class="form-group">
+                <label for="titulo">Título de la tarea:</label>
+                <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
+            </div>
+
+            <div class="form-group">
+                <label for="etiqueta">Etiqueta:</label>
+                <select class="form-control" id="etiqueta" name="etiquetaId">
+                    <option value="">Sin etiqueta</option>
+                    <option th:each="etiqueta : ${etiquetas}"
+                            th:value="${etiqueta.id}"
+                            th:text="${etiqueta.nombre}"
+                            th:selected="${tarea.etiquetas != null and tarea.etiquetas.contains(etiqueta)}">
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción de la tarea:</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Modificar tarea</button>
+            <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}">Cancelar</a>
         </div>
     </form>
 </div>

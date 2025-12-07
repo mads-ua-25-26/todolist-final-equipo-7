@@ -174,4 +174,24 @@ public class TareaService {
             throw new TareaServiceException("No se encontró la tarea o la etiqueta");
         }
     }
+
+    @Transactional
+    public void modificarEtiqueta(Long idTarea, Long idEtiqueta) {
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+
+        if (tarea != null) {
+            // 1. Limpiamos las etiquetas existentes (para que funcione como selección única)
+            tarea.getEtiquetas().clear();
+
+            // 2. Si se ha seleccionado una nueva, la buscamos y la añadimos
+            if (idEtiqueta != null) {
+                Etiqueta etiqueta = etiquetaRepository.findById(idEtiqueta).orElse(null);
+                if (etiqueta != null) {
+                    tarea.addEtiqueta(etiqueta);
+                }
+            }
+            // 3. Guardamos
+            tareaRepository.save(tarea);
+        }
+    }
 }

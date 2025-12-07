@@ -21,7 +21,7 @@
                     <th style="width: 40px;"></th>
                     <th>Id</th>
                     <th>Tarea</th>
-                    <th>Descripción</th>
+                    <th>Etiquetas</th> <th>Descripción</th>
                     <th>Acción</th>
                 </tr>
                 </thead>
@@ -39,6 +39,15 @@
                     </td>
                     <td th:text="${tarea.id}"></td>
                     <td th:text="${tarea.titulo}"></td>
+
+                    <td>
+                        <span th:each="etiqueta : ${tarea.etiquetas}"
+                              class="badge badge-pill"
+                              th:text="${etiqueta.nombre}"
+                              th:style="'background-color: ' + ${etiqueta.color} + '; color: white; margin-right: 5px;'">
+                        </span>
+                    </td>
+
                     <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
                     <td>
                         <a class="btn btn-primary btn-xs" th:href="@{/tareas/{id}/editar(id=${tarea.id})}">editar</a>
@@ -69,10 +78,8 @@
 
 <div th:replace="fragments::javascript"/>
 
-<!-- SortableJS CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
-<!-- Estilos para drag and drop -->
 <style>
     /* Evita que el texto se seleccione al arrastrar */
     .sortable-item {
@@ -92,7 +99,6 @@
 
 </style>
 
-<!-- Scripts -->
 <script type="text/javascript">
     // Función para borrar tarea
     function del(urlBorrar) {

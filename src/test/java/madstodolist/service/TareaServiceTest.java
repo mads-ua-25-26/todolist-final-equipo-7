@@ -206,4 +206,48 @@ public class TareaServiceTest {
         assertThat(tareaBD.getEtiquetas().contains(etiqueta)).isTrue();
     }
 
+    @Test
+    public void testDevuelveEtiquetasEnTareaData() {
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta("Urgente", "red");
+
+        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
+
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+
+        TareaData tareaData = tareas.stream()
+                .filter(t -> t.getId().equals(tareaId))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(tareaData).isNotNull();
+        assertThat(tareaData.getEtiquetas()).hasSize(1);
+        assertThat(tareaData.getEtiquetas()).contains(etiqueta);
+    }
+
+    @Test
+    public void testModificarEtiquetaDeUnaTarea() {
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        Etiqueta etiqueta1 = etiquetaService.crearEtiqueta("Urgente", "red");
+        Etiqueta etiqueta2 = etiquetaService.crearEtiqueta("Relax", "blue");
+
+        tareaService.asignarEtiqueta(tareaId, etiqueta1.getId());
+
+        tareaService.modificarEtiqueta(tareaId, etiqueta2.getId());
+
+        madstodolist.model.Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(1);
+        assertThat(tareaBD.getEtiquetas()).contains(etiqueta2);
+        assertThat(tareaBD.getEtiquetas()).doesNotContain(etiqueta1);
+
+        tareaService.modificarEtiqueta(tareaId, null);
+
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).isEmpty();
+    }
 }

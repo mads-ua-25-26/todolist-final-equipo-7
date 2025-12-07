@@ -70,10 +70,8 @@ public class TareaController {
 
         comprobarUsuarioLogeado(idUsuario);
 
-        // CORRECCIÓN 2: Guardamos el resultado en una variable 'tarea'
         TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
 
-        // Ahora sí podemos usar 'etiquetaId' y 'tarea'
         if (etiquetaId != null) {
             tareaService.asignarEtiqueta(tarea.getId(), etiquetaId);
         }
@@ -106,13 +104,17 @@ public class TareaController {
         comprobarUsuarioLogeado(tarea.getUsuarioId());
 
         model.addAttribute("tarea", tarea);
+        model.addAttribute("etiquetas", etiquetaService.findAll());
+
         tareaData.setTitulo(tarea.getTitulo());
         tareaData.setDescripcion(tarea.getDescripcion());
         return "formEditarTarea";
     }
 
     @PostMapping("/tareas/{id}/editar")
-    public String grabaTareaModificada(@PathVariable(value="id") Long idTarea, @ModelAttribute TareaData tareaData,
+    public String grabaTareaModificada(@PathVariable(value="id") Long idTarea,
+                                       @ModelAttribute TareaData tareaData,
+                                       @RequestParam(value = "etiquetaId", required = false) Long etiquetaId,
                                        Model model, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
@@ -124,6 +126,8 @@ public class TareaController {
         comprobarUsuarioLogeado(idUsuario);
 
         tareaService.modificaTarea(idTarea, tareaData.getTitulo(), tareaData.getDescripcion());
+        tareaService.modificarEtiqueta(idTarea, etiquetaId);
+
         flash.addFlashAttribute("mensaje", "Tarea modificada correctamente");
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
     }
