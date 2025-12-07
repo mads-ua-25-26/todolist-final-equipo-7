@@ -19,6 +19,8 @@ public class InitDbService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private TareaRepository tareaRepository;
+    @Autowired
+    EtiquetaService etiquetaService;
 
     // Se ejecuta tras crear el contexto de la aplicación
     // para inicializar la base de datos
@@ -34,6 +36,10 @@ public class InitDbService {
 
         Tarea tarea2 = new Tarea(usuario, "Renovar DNI");
         tareaRepository.save(tarea2);
+
+        etiquetaService.crearEtiqueta("Importante", "red");
+        etiquetaService.crearEtiqueta("Escuela", "blue");
+        etiquetaService.crearEtiqueta("Personal", "green");
     }
 
 }

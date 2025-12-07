@@ -18,6 +18,17 @@
             <label for="descripcion">Descripción de la tarea:</label>
             <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
         </div>
+        <div class="form-group">
+            <label for="etiqueta">Etiqueta:</label>
+            <select class="form-control" id="etiqueta" name="etiquetaId">
+                <option value="">Sin etiqueta</option>
+
+                <option th:each="etiqueta : ${etiquetas}"
+                        th:value="${etiqueta.id}"
+                        th:text="${etiqueta.nombre}">
+                </option>
+            </select>
+        </div>
         <button class="btn btn-primary" type="submit">Crear tarea</button>
         <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Cancelar</a>
         </div>

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import madstodolist.model.Etiqueta;
+import madstodolist.service.EtiquetaService;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -33,6 +35,9 @@ public class TareaController {
     @Autowired
     ManagerUserSession managerUserSession;
 
+    @Autowired
+    EtiquetaService etiquetaService;
+
     private void comprobarUsuarioLogeado(Long idUsuario) {
         Long idUsuarioLogeado = managerUserSession.usuarioLogeado();
         if (!idUsuario.equals(idUsuarioLogeado))
@@ -48,20 +53,34 @@ public class TareaController {
 
         UsuarioData usuario = usuarioService.findById(idUsuario);
         model.addAttribute("usuario", usuario);
+
+        List<Etiqueta> etiquetas = etiquetaService.findAll();
+        model.addAttribute("etiquetas", etiquetas);
+
         return "formNuevaTarea";
     }
 
     @PostMapping("/usuarios/{id}/tareas/nueva")
-    public String nuevaTarea(@PathVariable(value="id") Long idUsuario, @ModelAttribute TareaData tareaData,
+    public String nuevaTarea(@PathVariable(value="id") Long idUsuario,
+                             @ModelAttribute TareaData tareaData,
+                             // CORRECCIÓN 1: Añadimos este parámetro que faltaba
+                             @RequestParam(value = "etiquetaId", required = false) Long etiquetaId,
                              Model model, RedirectAttributes flash,
                              HttpSession session) {
 
         comprobarUsuarioLogeado(idUsuario);
 
-        tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
+        // CORRECCIÓN 2: Guardamos el resultado en una variable 'tarea'
+        TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
+
+        // Ahora sí podemos usar 'etiquetaId' y 'tarea'
+        if (etiquetaId != null) {
+            tareaService.asignarEtiqueta(tarea.getId(), etiquetaId);
+        }
+
         flash.addFlashAttribute("mensaje", "Tarea creada correctamente");
         return "redirect:/usuarios/" + idUsuario + "/tareas";
-     }
+    }
 
     @GetMapping("/usuarios/{id}/tareas")
     public String listadoTareas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
