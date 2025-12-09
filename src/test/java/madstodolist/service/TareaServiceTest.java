@@ -1,5 +1,6 @@
 package madstodolist.service;
 
+import madstodolist.dto.SubtareaData;
 import madstodolist.dto.TareaData;
 import madstodolist.dto.UsuarioData;
 import org.junit.jupiter.api.Test;
@@ -189,6 +190,62 @@ public class TareaServiceTest {
 
         assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2); // Renovar DNI ahora es primera
         assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
+    }
+
+    @Test
+    public void testCrearSubtarea() {
+        // GIVEN: Un usuario y una tarea existentes
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        // WHEN: Creamos una subtarea para esa tarea
+        // Nota: Asumimos que el método devolverá un DTO de la subtarea
+        SubtareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Comprar leche");
+
+        // THEN: La subtarea se crea correctamente
+        assertThat(subtarea).isNotNull();
+        assertThat(subtarea.getTexto()).isEqualTo("Comprar leche");
+        assertThat(subtarea.getCompletado()).isFalse(); // Por defecto debe estar pendiente
+
+        // Y la tarea padre contiene la subtarea
+        List<SubtareaData> subtareas = tareaService.obtenerSubtareas(tareaId);
+        assertThat(subtareas).hasSize(1);
+        assertThat(subtareas.get(0).getId()).isEqualTo(subtarea.getId());
+    }
+
+    @Test
+    public void testMarcarSubtareaCompletada() {
+        // GIVEN: Una tarea con una subtarea
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        SubtareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Paso 1");
+
+        // WHEN: Marcamos la subtarea como completada (toggle)
+        SubtareaData subtareaActualizada = tareaService.cambiarEstadoSubtarea(subtarea.getId());
+
+        // THEN: El estado cambia a true
+        assertThat(subtareaActualizada.getCompletado()).isTrue();
+
+        // WHEN: La volvemos a marcar
+        subtareaActualizada = tareaService.cambiarEstadoSubtarea(subtarea.getId());
+
+        // THEN: El estado vuelve a false
+        assertThat(subtareaActualizada.getCompletado()).isFalse();
+    }
+
+    @Test
+    public void testEliminarSubtarea() {
+        // GIVEN: Una tarea con una subtarea
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        SubtareaData subtarea = tareaService.nuevaSubtarea(tareaId, "A borrar");
+
+        // WHEN: Eliminamos la subtarea
+        tareaService.borrarSubtarea(subtarea.getId());
+
+        // THEN: La lista de subtareas está vacía
+        List<SubtareaData> subtareas = tareaService.obtenerSubtareas(tareaId);
+        assertThat(subtareas).isEmpty();
     }
 
 }
