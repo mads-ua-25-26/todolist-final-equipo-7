@@ -6,10 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
+import madstodolist.model.Etiqueta;
+import madstodolist.model.Tarea;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,6 +30,12 @@ public class TareaServiceTest {
 
     @Autowired
     TareaService tareaService;
+
+    @Autowired
+    EtiquetaService etiquetaService;
+
+    @Autowired
+    madstodolist.repository.TareaRepository tareaRepository;
 
     // Método para inicializar los datos de prueba en la BD
     // Devuelve un mapa con los identificadores del usuario y de la primera tarea añadida
@@ -138,16 +147,6 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void asignarEtiquetaATarea(){
-
-        Map<String, Long> ids = addUsuarioTareasBD();
-        Long usuarioId = ids.get("usuarioId");
-        Long tareaId = ids.get("tareaId");
-
-        assertThat(tareaService.usuarioContieneTarea(usuarioId,tareaId)).isTrue();
-    }
-
-    @Test
     public void testNuevaTareaSeAñadeAlFinal() {
         // GIVEN
         // Un usuario con 2 tareas creadas por el método auxiliar (posiciones 1 y 2)
@@ -191,4 +190,79 @@ public class TareaServiceTest {
         assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
     }
 
+    @Test
+    public void asignarEtiquetaATarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
+        Long tareaId = ids.get("tareaId");
+
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
+
+        // WHEN
+        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
+
+        // THEN
+        madstodolist.model.Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(1);
+        assertThat(tareaBD.getEtiquetas().contains(etiqueta)).isTrue();
+    }
+
+    @Test
+    public void testDevuelveEtiquetasEnTareaData() {
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
+
+        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
+
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+
+        TareaData tareaData = tareas.stream()
+                .filter(t -> t.getId().equals(tareaId))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(tareaData).isNotNull();
+        assertThat(tareaData.getEtiquetas()).hasSize(1);
+        assertThat(tareaData.getEtiquetas()).contains(etiqueta);
+    }
+
+    @Test
+    public void testActualizarEtiquetas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
+
+        Etiqueta e1 = etiquetaService.crearEtiqueta(usuarioId, "E1", "red");
+        Etiqueta e2 = etiquetaService.crearEtiqueta(usuarioId, "E2", "blue");
+        Etiqueta e3 = etiquetaService.crearEtiqueta(usuarioId, "E3", "green");
+
+        // WHEN: Asignamos E1 y E2
+        tareaService.actualizarEtiquetas(tareaId, List.of(e1.getId(), e2.getId()));
+
+        // THEN
+        Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e1, e2);
+
+        // WHEN: Cambiamos para tener E2 y E3
+        tareaService.actualizarEtiquetas(tareaId, List.of(e2.getId(), e3.getId()));
+
+        // THEN
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e2, e3);
+        assertThat(tareaBD.getEtiquetas()).doesNotContain(e1);
+
+        // WHEN: Pasamos lista vacía
+        tareaService.actualizarEtiquetas(tareaId, new ArrayList<>());
+
+        // THEN
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).isEmpty();
+    }
 }

@@ -4,6 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tareas")
@@ -27,6 +29,15 @@ public class Tarea implements Serializable {
     // el ID del usuario con el que está asociado una tarea
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    // Relación muchos a muchos con Etiquetas
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "tarea_etiquetas",
+            joinColumns = @JoinColumn(name = "tarea_id"),
+            inverseJoinColumns = @JoinColumn(name = "etiqueta_id")
+    )
+    private Set<Etiqueta> etiquetas = new HashSet<>();
 
     // Constructor vacío necesario para JPA/Hibernate.
     // No debe usarse desde la aplicación.
@@ -77,6 +88,15 @@ public class Tarea implements Serializable {
         return usuario;
     }
 
+    // Getters y setters de Etiquetas
+    public Set<Etiqueta> getEtiquetas() {
+        return etiquetas;
+    }
+
+    public void setEtiquetas(Set<Etiqueta> etiquetas) {
+        this.etiquetas = etiquetas;
+    }
+
     // Método para establecer la relación con el usuario
 
     public void setUsuario(Usuario usuario) {
@@ -111,5 +131,16 @@ public class Tarea implements Serializable {
     }
     public void setPosition(Integer position) {
         this.position = position;
+    }
+
+
+    // Métodos que ayudan a la entidad Etiqueta
+    public void addEtiqueta(Etiqueta etiqueta) {
+        // Al ser un Set, si ya existe no la duplica
+        this.etiquetas.add(etiqueta);
+    }
+
+    public void removeEtiqueta(Etiqueta etiqueta) {
+        this.etiquetas.remove(etiqueta);
     }
 }

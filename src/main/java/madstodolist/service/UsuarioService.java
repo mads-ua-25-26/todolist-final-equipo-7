@@ -23,8 +23,13 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
     @Autowired
     private ModelMapper modelMapper;
+
+    // 1. AÑADIMOS EL SERVICIO DE ETIQUETAS
+    @Autowired
+    private EtiquetaService etiquetaService;
 
     @Transactional(readOnly = true)
     public LoginStatus login(String eMail, String password) {
@@ -38,9 +43,6 @@ public class UsuarioService {
         }
     }
 
-    // Se añade un usuario en la aplicación.
-    // El email y password del usuario deben ser distinto de null
-    // El email no debe estar registrado en la base de datos
     @Transactional
     public UsuarioData registrar(UsuarioData usuario) {
         Optional<Usuario> usuarioBD = usuarioRepository.findByEmail(usuario.getEmail());
@@ -53,14 +55,21 @@ public class UsuarioService {
         else {
             Usuario usuarioNuevo = modelMapper.map(usuario, Usuario.class);
 
-            // Manejar explícitamente el campo admin
             if (usuario.getAdmin() != null && usuario.getAdmin()) {
                 usuarioNuevo.setAdmin();
             } else {
                 usuarioNuevo.disableAdmin();
             }
 
+            // Guardamos el usuario (aquí se genera su ID)
             usuarioNuevo = usuarioRepository.save(usuarioNuevo);
+
+            // 2. CREAMOS LAS ETIQUETAS POR DEFECTO
+            // Usamos los códigos HEX para que coincidan con tu selector de colores
+            etiquetaService.crearEtiqueta(usuarioNuevo.getId(), "Personal", "#28a745"); // Verde
+            etiquetaService.crearEtiqueta(usuarioNuevo.getId(), "Escuela", "#007bff");  // Azul
+            etiquetaService.crearEtiqueta(usuarioNuevo.getId(), "Importante", "#dc3545"); // Rojo
+
             return modelMapper.map(usuarioNuevo, UsuarioData.class);
         }
     }
@@ -83,7 +92,6 @@ public class UsuarioService {
         }
     }
 
-    //Método que lista todos los usuarios
     @Transactional(readOnly = true)
     public List<UsuarioData> allUsuarios() {
         List<UsuarioData> usuariosData = new ArrayList<>();

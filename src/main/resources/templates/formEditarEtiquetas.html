@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: head (titulo='Editar Etiquetas')"></head>
+
+<body>
+<div th:replace="~{navbar}"></div>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Modificar Etiquetas</h2>
+
+    <form method="post" th:action="@{/usuarios/{id}/etiquetas(id=${usuario.id})}" th:object="${etiquetaData}">
+
+        <div id="lista-etiquetas">
+            <div class="row font-weight-bold mb-2">
+                <div class="col-4">Nombre</div>
+                <div class="col-4">Color</div>
+            </div>
+
+            <div th:each="etiqueta, itemStat : *{etiquetas}" class="row mb-2 fila-etiqueta">
+                <input type="hidden" th:field="*{etiquetas[__${itemStat.index}__].id}" />
+
+                <div class="col-4">
+                    <input type="text" class="form-control" maxlength="15" required
+                           th:field="*{etiquetas[__${itemStat.index}__].nombre}" placeholder="Nombre etiqueta"/>
+                </div>
+
+                <div class="col-4 d-flex align-items-center">
+                    <div class="color-preview mr-2 rounded"
+                         style="width: 25px; height: 25px;"
+                         th:styleappend="'background-color: ' + *{etiquetas[__${itemStat.index}__].color}">
+                    </div>
+
+                    <select class="form-control select-color"
+                            th:field="*{etiquetas[__${itemStat.index}__].color}"
+                            onchange="actualizarColor(this)">
+                        <option th:each="colorEntry : ${colores}"
+                                th:value="${colorEntry.value}"
+                                th:text="${colorEntry.key}"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-primary" onclick="nuevaEtiqueta()">
+                    <i class="fas fa-plus"></i> Nueva etiqueta
+                </button>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-success mr-2">Guardar cambios</button>
+                <a th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}" class="btn btn-danger">Cancelar</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div th:replace="fragments::javascript"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Pasamos el mapa de colores al JS para rellenar el select nuevo
+    var mapColores = /*[[${colores}]]*/ {};
+    /*]]>*/
+
+    function actualizarColor(select) {
+        // Busca el div anterior (el cuadrado de color) y cambia su background
+        var color = select.value;
+        var preview = select.previousElementSibling;
+        preview.style.backgroundColor = color;
+    }
+
+    function nuevaEtiqueta() {
+        var container = document.getElementById('lista-etiquetas');
+        var index = container.getElementsByClassName('fila-etiqueta').length;
+
+        // Creamos las opciones del select
+        var opciones = '';
+        for (var nombreColor in mapColores) {
+            var hex = mapColores[nombreColor];
+            opciones += `<option value="${hex}">${nombreColor}</option>`;
+        }
+        // Primer color por defecto para el preview
+        var primerHex = Object.values(mapColores)[0];
+
+        var html = `
+            <div class="row mb-2 fila-etiqueta">
+                <div class="col-4">
+                    <input type="text" class="form-control" maxlength="15" required
+                           name="etiquetas[${index}].nombre" placeholder="Nueva etiqueta"/>
+                </div>
+                <div class="col-4 d-flex align-items-center">
+                    <div class="color-preview mr-2 rounded"
+                         style="width: 25px; height: 25px; background-color: ${primerHex};">
+                    </div>
+                    <select class="form-control select-color"
+                            name="etiquetas[${index}].color"
+                            onchange="actualizarColor(this)">
+                        ${opciones}
+                    </select>
+                </div>
+            </div>`;
+
+        container.insertAdjacentHTML('beforeend', html);
+    }
+</script>
+
+</body>
+</html>

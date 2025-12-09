@@ -21,7 +21,7 @@
                     <th style="width: 40px;"></th>
                     <th>Id</th>
                     <th>Tarea</th>
-                    <th>Descripción</th>
+                    <th>Etiquetas</th> <th>Descripción</th>
                     <th>Acción</th>
                 </tr>
                 </thead>
@@ -39,6 +39,15 @@
                     </td>
                     <td th:text="${tarea.id}"></td>
                     <td th:text="${tarea.titulo}"></td>
+
+                    <td>
+                        <span th:each="etiqueta : ${tarea.etiquetas}"
+                              class="badge badge-pill"
+                              th:text="${etiqueta.nombre}"
+                              th:style="'background-color: ' + ${etiqueta.color} + '; color: white; display: block; margin-bottom: 4px; width: fit-content;'">
+                        </span>
+                    </td>
+
                     <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
                     <td>
                         <a class="btn btn-primary btn-xs" th:href="@{/tareas/{id}/editar(id=${tarea.id})}">editar</a>
@@ -50,6 +59,7 @@
             </table>
             <p>
                 <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">Nueva tarea</a>
+                <a class="btn btn-secondary ml-2" th:href="@{/usuarios/{id}/etiquetas(id=${usuario.id})}">Modificar etiquetas</a>
                 <a class="btn btn-link" href="/logout">Salir</a>
             </p>
         </div>
@@ -69,10 +79,8 @@
 
 <div th:replace="fragments::javascript"/>
 
-<!-- SortableJS CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
-<!-- Estilos para drag and drop -->
 <style>
     /* Evita que el texto se seleccione al arrastrar */
     .sortable-item {
@@ -92,7 +100,6 @@
 
 </style>
 
-<!-- Scripts -->
 <script type="text/javascript">
     // Función para borrar tarea
     function del(urlBorrar) {
