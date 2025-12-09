@@ -21,9 +21,14 @@ public class Etiqueta implements Serializable {
     @NotNull
     private String color;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     public Etiqueta() {}
 
-    public Etiqueta(String nombre, String color) {
+    public Etiqueta(Usuario usuario, String nombre, String color) {
+        this.usuario = usuario;
         this.nombre = nombre;
         this.color = color;
     }
@@ -36,6 +41,10 @@ public class Etiqueta implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public Usuario getUsuario() { return usuario; }
+
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
     public String getNombre() {
         return nombre;

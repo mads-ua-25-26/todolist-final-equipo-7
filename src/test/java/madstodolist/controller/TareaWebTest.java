@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.Assertions.assertThat;
+import madstodolist.repository.UsuarioRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,9 @@ public class TareaWebTest {
 
     @Autowired
     private madstodolist.repository.EtiquetaRepository etiquetaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
 
     // Moqueamos el managerUserSession para poder moquear el usuario logeado
@@ -270,7 +274,6 @@ public class TareaWebTest {
         assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1);
     }
 
-
     @Test
     public void editarTareaConMultiplesEtiquetasActualizaCorrectamente() throws Exception {
         // GIVEN
@@ -279,9 +282,13 @@ public class TareaWebTest {
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
 
-        // Creamos y persistimos dos etiquetas en la BD (usando el repositorio)
-        madstodolist.model.Etiqueta e1 = new madstodolist.model.Etiqueta("Tag1", "red");
-        madstodolist.model.Etiqueta e2 = new madstodolist.model.Etiqueta("Tag2", "blue");
+        // CORRECCIÓN: Recuperamos el Usuario real de la BD con excepción explícita
+        madstodolist.model.Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Creamos y persistimos dos etiquetas vinculadas a ESE usuario
+        madstodolist.model.Etiqueta e1 = new madstodolist.model.Etiqueta(usuario, "Tag1", "red");
+        madstodolist.model.Etiqueta e2 = new madstodolist.model.Etiqueta(usuario, "Tag2", "blue");
         e1 = etiquetaRepository.save(e1);
         e2 = etiquetaRepository.save(e2);
 
@@ -289,8 +296,6 @@ public class TareaWebTest {
         when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
 
         // WHEN
-        // Hacemos el POST de editar con título nuevo y con DOS IDs de etiquetas
-        // Usamos el nombre 'etiquetaIds' repetido (coincide con el formulario actual)
         this.mockMvc.perform(post("/tareas/" + tareaId + "/editar")
                         .param("titulo", "Tarea con etiquetas")
                         .param("descripcion", "Descripción editada")
@@ -299,7 +304,6 @@ public class TareaWebTest {
                 .andExpect(status().is3xxRedirection());
 
         // THEN
-        // Verificamos en la base de datos (a través del servicio) que la tarea tiene 2 etiquetas
         TareaData tareaModificada = tareaService.findById(tareaId);
         assertThat(tareaModificada.getEtiquetas()).hasSize(2);
     }

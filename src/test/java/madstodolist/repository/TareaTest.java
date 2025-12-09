@@ -291,27 +291,23 @@ public class TareaTest {
     @Transactional
     public void añadirEtiquetaAUnaTarea() {
         // GIVEN
-        // Un usuario, una tarea y una etiqueta en la BD
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
 
         Tarea tarea = new Tarea(usuario, "Comprar leche");
         tareaRepository.save(tarea);
 
-        Etiqueta etiqueta = new Etiqueta("Compras", "green");
+        // CORRECCIÓN: Pasamos el usuario al constructor
+        Etiqueta etiqueta = new Etiqueta(usuario, "Compras", "green");
         etiquetaRepository.save(etiqueta);
 
         // WHEN
-        // Asociamos la etiqueta a la tarea
         tarea.addEtiqueta(etiqueta);
-        // Guardamos la tarea
         tareaRepository.save(tarea);
 
         // THEN
-        // Al recuperar la tarea, contiene la etiqueta
         Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
         assertThat(tareaBD.getEtiquetas()).hasSize(1);
         assertThat(tareaBD.getEtiquetas()).contains(etiqueta);
     }
-
 }

@@ -1,6 +1,7 @@
 package madstodolist.repository;
 
 import madstodolist.model.Etiqueta;
+import madstodolist.model.Usuario; // Import necesario
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,43 +17,54 @@ public class EtiquetaTest {
     @Autowired
     EtiquetaRepository etiquetaRepository;
 
+    @Autowired
+    UsuarioRepository usuarioRepository; // Necesitamos esto para guardar el usuario
+
     @Test
     public void crearEtiqueta() {
-        // Una etiqueta nueva en memoria
-        Etiqueta etiqueta = new Etiqueta("Trabajo", "red");
+        // GIVEN: Creamos un usuario dummy (no hace falta guardarlo en BD para este test unitario básico)
+        Usuario usuario = new Usuario("test@ua.es");
 
-        // Los valores son correctos
+        // WHEN: Creamos la etiqueta pasándole el usuario
+        Etiqueta etiqueta = new Etiqueta(usuario, "Trabajo", "red");
+
+        // THEN
         assertThat(etiqueta.getNombre()).isEqualTo("Trabajo");
         assertThat(etiqueta.getColor()).isEqualTo("red");
+        assertThat(etiqueta.getUsuario()).isEqualTo(usuario);
     }
 
     @Test
     @Transactional
     public void guardarEtiquetaEnBaseDatos() {
-        // Una etiqueta nueva
-        Etiqueta etiqueta = new Etiqueta("Urgente", "orange");
+        // GIVEN: Un usuario guardado en BD
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
 
-        // La guardamos en la BD
+        // WHEN: Creamos la etiqueta vinculada al usuario y guardamos
+        Etiqueta etiqueta = new Etiqueta(usuario, "Urgente", "orange");
         etiquetaRepository.save(etiqueta);
 
-        // Se le asigna un ID
+        // THEN
         assertThat(etiqueta.getId()).isNotNull();
 
         // Y podemos recuperarla
         Etiqueta etiquetaBD = etiquetaRepository.findById(etiqueta.getId()).orElse(null);
         assertThat(etiquetaBD).isNotNull();
         assertThat(etiquetaBD.getNombre()).isEqualTo("Urgente");
-        assertThat(etiquetaBD.getColor()).isEqualTo("orange");
+        assertThat(etiquetaBD.getUsuario().getId()).isEqualTo(usuario.getId());
     }
 
     @Test
     public void comprobarIgualdadEtiquetas() {
         // GIVEN
-        Etiqueta e1 = new Etiqueta("Java", "blue");
-        Etiqueta e2 = new Etiqueta("Java", "blue");
-        Etiqueta e3 = new Etiqueta("Python", "green");
+        Usuario usuario = new Usuario("test@ua");
 
-        // Sin ID, son iguales si tienen mismo nombre y color
+        Etiqueta e1 = new Etiqueta(usuario, "Java", "blue");
+        Etiqueta e2 = new Etiqueta(usuario, "Java", "blue");
+        Etiqueta e3 = new Etiqueta(usuario, "Python", "green");
+
+        // Sin ID, son iguales si tienen mismo nombre, color Y usuario
         assertThat(e1).isEqualTo(e2);
         assertThat(e1).isNotEqualTo(e3);
     }

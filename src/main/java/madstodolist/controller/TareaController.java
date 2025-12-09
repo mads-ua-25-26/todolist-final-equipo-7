@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import madstodolist.model.Etiqueta;
 import madstodolist.service.EtiquetaService;
+import madstodolist.dto.EtiquetaData;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -44,6 +45,21 @@ public class TareaController {
             throw new UsuarioNoLogeadoException();
     }
 
+    private Map<String, String> obtenerColores() {
+        Map<String, String> colores = new HashMap<>();
+        colores.put("Gris", "#6c757d");
+        colores.put("Marrón", "#795548");
+        colores.put("Naranja", "#fd7e14");
+        colores.put("Amarillo", "#ffc107");
+        colores.put("Verde", "#28a745");
+        colores.put("Azul", "#007bff");
+        colores.put("Violeta", "#6f42c1");
+        colores.put("Rosa", "#e83e8c");
+        colores.put("Rojo", "#dc3545");
+        colores.put("Negro", "#343a40");
+        return colores;
+    }
+
     @GetMapping("/usuarios/{id}/tareas/nueva")
     public String formNuevaTarea(@PathVariable(value="id") Long idUsuario,
                                  @ModelAttribute TareaData tareaData, Model model,
@@ -54,7 +70,7 @@ public class TareaController {
         UsuarioData usuario = usuarioService.findById(idUsuario);
         model.addAttribute("usuario", usuario);
 
-        List<Etiqueta> etiquetas = etiquetaService.findAll();
+        List<Etiqueta> etiquetas = etiquetaService.findAllByUsuario(idUsuario);
         model.addAttribute("etiquetas", etiquetas);
 
         return "formNuevaTarea";
@@ -103,7 +119,7 @@ public class TareaController {
         comprobarUsuarioLogeado(tarea.getUsuarioId());
 
         model.addAttribute("tarea", tarea);
-        model.addAttribute("etiquetas", etiquetaService.findAll());
+        model.addAttribute("etiquetas", etiquetaService.findAllByUsuario(tarea.getUsuarioId()));
 
         tareaData.setTitulo(tarea.getTitulo());
         tareaData.setDescripcion(tarea.getDescripcion());
@@ -185,6 +201,34 @@ public class TareaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al actualizar el orden"));
         }
+    }
+
+    @GetMapping("/usuarios/{id}/etiquetas")
+    public String editarEtiquetas(@PathVariable(value="id") Long idUsuario, Model model) {
+        comprobarUsuarioLogeado(idUsuario);
+        UsuarioData usuario = usuarioService.findById(idUsuario);
+
+        List<Etiqueta> etiquetas = etiquetaService.findAllByUsuario(idUsuario);
+        EtiquetaData etiquetaData = new EtiquetaData();
+        etiquetaData.setEtiquetas(etiquetas);
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("etiquetaData", etiquetaData);
+        model.addAttribute("colores", obtenerColores());
+
+        return "formEditarEtiquetas";
+    }
+
+    @PostMapping("/usuarios/{id}/etiquetas")
+    public String guardarEtiquetas(@PathVariable(value="id") Long idUsuario,
+                                   @ModelAttribute EtiquetaData data,
+                                   RedirectAttributes flash) {
+        comprobarUsuarioLogeado(idUsuario);
+
+        etiquetaService.guardarEtiquetas(idUsuario, data.getEtiquetas());
+
+        flash.addFlashAttribute("mensaje", "Etiquetas actualizadas correctamente");
+        return "redirect:/usuarios/" + idUsuario + "/tareas";
     }
 }
 

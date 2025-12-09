@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import madstodolist.repository.EtiquetaRepository;
 import madstodolist.model.Etiqueta;
 import madstodolist.model.Tarea;
 
@@ -191,13 +190,14 @@ public class TareaServiceTest {
         assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
     }
 
-
     @Test
     public void asignarEtiquetaATarea() {
         // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
         Long tareaId = ids.get("tareaId");
-        Etiqueta etiqueta = etiquetaService.crearEtiqueta("Urgente", "red");
+
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
 
         // WHEN
         tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
@@ -214,7 +214,7 @@ public class TareaServiceTest {
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
 
-        Etiqueta etiqueta = etiquetaService.crearEtiqueta("Urgente", "red");
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
 
         tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
 
@@ -235,10 +235,11 @@ public class TareaServiceTest {
         // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
         Long tareaId = ids.get("tareaId");
+        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
 
-        Etiqueta e1 = etiquetaService.crearEtiqueta("E1", "red");
-        Etiqueta e2 = etiquetaService.crearEtiqueta("E2", "blue");
-        Etiqueta e3 = etiquetaService.crearEtiqueta("E3", "green");
+        Etiqueta e1 = etiquetaService.crearEtiqueta(usuarioId, "E1", "red");
+        Etiqueta e2 = etiquetaService.crearEtiqueta(usuarioId, "E2", "blue");
+        Etiqueta e3 = etiquetaService.crearEtiqueta(usuarioId, "E3", "green");
 
         // WHEN: Asignamos E1 y E2
         tareaService.actualizarEtiquetas(tareaId, List.of(e1.getId(), e2.getId()));
@@ -248,7 +249,7 @@ public class TareaServiceTest {
         assertThat(tareaBD.getEtiquetas()).hasSize(2);
         assertThat(tareaBD.getEtiquetas()).contains(e1, e2);
 
-        // WHEN: Cambiamos para tener E2 y E3 (E1 se debe borrar)
+        // WHEN: Cambiamos para tener E2 y E3
         tareaService.actualizarEtiquetas(tareaId, List.of(e2.getId(), e3.getId()));
 
         // THEN
