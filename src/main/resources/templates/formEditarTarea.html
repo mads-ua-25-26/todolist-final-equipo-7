@@ -6,37 +6,152 @@
 <body>
 <div class="container-fluid">
 
-    <h2 th:text="'Modificación de la tarea ' + ${tarea.getId()}"></h2>
-
-    <form method="post" th:action="@{/tareas/{id}/editar(id=${tarea.id})}" th:object="${tareaData}">
-        <div class="col-6">
-            <div class="form-group">
-                <label for="titulo">Título de la tarea:</label>
-                <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
-            </div>
-
-            <div class="form-group">
-                <label for="etiqueta">Etiqueta:</label>
-                <select class="form-control" id="etiqueta" name="etiquetaId">
-                    <option value="">Sin etiqueta</option>
-                    <option th:each="etiqueta : ${etiquetas}"
-                            th:value="${etiqueta.id}"
-                            th:text="${etiqueta.nombre}"
-                            th:selected="${tarea.etiquetas != null and tarea.etiquetas.contains(etiqueta)}">
-                    </option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="descripcion">Descripción de la tarea:</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
-            </div>
-            <button class="btn btn-primary" type="submit">Modificar tarea</button>
-            <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}">Cancelar</a>
+    <div class="row mt-3">
+        <div class="col">
+            <h2 th:text="'Modificación de la tarea ' + ${tarea.getId()}"></h2>
         </div>
-    </form>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-6">
+            <form method="post"
+                  th:action="@{/tareas/{id}/editar(id=${tarea.id})}"
+                  th:object="${tareaData}">
+
+                <div class="form-group">
+                    <label for="titulo">Título de la tarea:</label>
+                    <input class="form-control"
+                           id="titulo"
+                           name="titulo"
+                           required
+                           th:field="*{titulo}"
+                           type="text"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="select-etiquetas">Etiquetas:</label>
+                    <select class="form-control"
+                            id="select-etiquetas"
+                            onchange="agregarEtiqueta(this)">
+                        <option value="" selected disabled>Añadir etiqueta...</option>
+                        <option th:each="etiqueta : ${etiquetas}"
+                                th:value="${etiqueta.id}"
+                                th:text="${etiqueta.nombre}"
+                                th:data-color="${etiqueta.color}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- contenedor donde estarán los badges + inputs ocultos -->
+                <div id="etiquetas-seleccionadas" class="mb-3">
+                    <!-- badges iniciales renderizados por Thymeleaf -->
+                    <span th:each="etiquetaTarea : ${tarea.etiquetas}"
+                          class="badge badge-pill mr-2 mb-2 p-2 etiqueta-badge"
+                          th:attr="data-id=${etiquetaTarea.id}, data-color=${etiquetaTarea.color}"
+                          th:style="'background-color: ' + ${etiquetaTarea.color} + '; color: white; cursor: pointer;'">
+                        <span th:text="${etiquetaTarea.nombre} + ' ×'"></span>
+                        <input type="hidden" name="etiquetaIds" th:value="${etiquetaTarea.id}"/>
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción de la tarea:</label>
+                    <textarea class="form-control"
+                              id="descripcion"
+                              name="descripcion"
+                              rows="3"
+                              th:field="*{descripcion}"></textarea>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Modificar tarea</button>
+                <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}">Cancelar</a>
+            </form>
+        </div>
+    </div>
 </div>
 
-<div th:replace="fragments::javascript"/>
+<div th:replace="fragments::javascript"></div>
+
+<script>
+    const etiquetasSeleccionadas = new Set();
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll('input[name="etiquetaIds"]');
+        inputs.forEach(input => {
+            etiquetasSeleccionadas.add(String(input.value));
+        });
+    });
+
+    // Función para agregar una etiqueta desde el select
+    function agregarEtiqueta(select) {
+        const option = select.options[select.selectedIndex];
+        const id = option.value;
+        const nombre = option.text;
+        const color = option.getAttribute('data-color');
+
+        if (!id) {
+            select.value = "";
+            return;
+        }
+
+        // Comprobamos en el Set
+        if (etiquetasSeleccionadas.has(String(id))) {
+            // ya añadida
+            select.value = "";
+            return;
+        }
+
+        etiquetasSeleccionadas.add(String(id));
+
+        const container = document.getElementById('etiquetas-seleccionadas');
+
+        // Creamos el badge
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-pill mr-2 mb-2 p-2 etiqueta-badge';
+        badge.setAttribute('data-id', id);
+        badge.style.backgroundColor = color || '#6c757d';
+        badge.style.color = 'white';
+        badge.style.cursor = 'pointer';
+
+        // Texto visible
+        const texto = document.createElement('span');
+        texto.textContent = nombre + ' ×';
+        badge.appendChild(texto);
+
+        // Input hidden para enviar al servidor (mismo nombre que en creación)
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'etiquetaIds';
+        input.value = id;
+        badge.appendChild(input);
+
+        // Añadimos el badge al container
+        container.appendChild(badge);
+
+        // Reseteamos select
+        select.value = "";
+    }
+
+    // Event delegation para borrar badge cuando se hace clic en él
+    document.getElementById('etiquetas-seleccionadas').addEventListener('click', function (ev) {
+        // Si se clicó en un badge o en algo dentro de él, subimos hasta el badge
+        let target = ev.target;
+        // sube hasta encontrar elemento con clase etiqueta-badge
+        while (target && !target.classList.contains('etiqueta-badge')) {
+            target = target.parentElement;
+        }
+        if (!target) return;
+
+        const id = target.getAttribute('data-id');
+        if (!id) return;
+
+        // Eliminamos del Set
+        etiquetasSeleccionadas.delete(String(id));
+
+        // Eliminamos el badge (el input hidden se borra con él)
+        target.remove();
+    });
+</script>
 
 </body>
 </html>

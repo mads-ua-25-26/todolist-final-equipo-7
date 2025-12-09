@@ -8,10 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import madstodolist.repository.EtiquetaRepository;
 import madstodolist.model.Etiqueta;
+import madstodolist.model.Tarea;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -229,24 +231,36 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void testModificarEtiquetaDeUnaTarea() {
+    public void testActualizarEtiquetas() {
+        // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
         Long tareaId = ids.get("tareaId");
 
-        Etiqueta etiqueta1 = etiquetaService.crearEtiqueta("Urgente", "red");
-        Etiqueta etiqueta2 = etiquetaService.crearEtiqueta("Relax", "blue");
+        Etiqueta e1 = etiquetaService.crearEtiqueta("E1", "red");
+        Etiqueta e2 = etiquetaService.crearEtiqueta("E2", "blue");
+        Etiqueta e3 = etiquetaService.crearEtiqueta("E3", "green");
 
-        tareaService.asignarEtiqueta(tareaId, etiqueta1.getId());
+        // WHEN: Asignamos E1 y E2
+        tareaService.actualizarEtiquetas(tareaId, List.of(e1.getId(), e2.getId()));
 
-        tareaService.modificarEtiqueta(tareaId, etiqueta2.getId());
+        // THEN
+        Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e1, e2);
 
-        madstodolist.model.Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
-        assertThat(tareaBD.getEtiquetas()).hasSize(1);
-        assertThat(tareaBD.getEtiquetas()).contains(etiqueta2);
-        assertThat(tareaBD.getEtiquetas()).doesNotContain(etiqueta1);
+        // WHEN: Cambiamos para tener E2 y E3 (E1 se debe borrar)
+        tareaService.actualizarEtiquetas(tareaId, List.of(e2.getId(), e3.getId()));
 
-        tareaService.modificarEtiqueta(tareaId, null);
+        // THEN
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e2, e3);
+        assertThat(tareaBD.getEtiquetas()).doesNotContain(e1);
 
+        // WHEN: Pasamos lista vacía
+        tareaService.actualizarEtiquetas(tareaId, new ArrayList<>());
+
+        // THEN
         tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD.getEtiquetas()).isEmpty();
     }

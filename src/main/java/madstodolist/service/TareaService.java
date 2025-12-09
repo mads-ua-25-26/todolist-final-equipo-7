@@ -176,19 +176,20 @@ public class TareaService {
     }
 
     @Transactional
-    public void modificarEtiqueta(Long idTarea, Long idEtiqueta) {
+    public void actualizarEtiquetas(Long idTarea, List<Long> etiquetaIds) {
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
 
         if (tarea != null) {
-            // 1. Limpiamos las etiquetas existentes (para que funcione como selección única)
+            // 1. Borramos las que tenga asignadas actualmente
             tarea.getEtiquetas().clear();
 
-            // 2. Si se ha seleccionado una nueva, la buscamos y la añadimos
-            if (idEtiqueta != null) {
-                Etiqueta etiqueta = etiquetaRepository.findById(idEtiqueta).orElse(null);
-                if (etiqueta != null) {
-                    tarea.addEtiqueta(etiqueta);
-                }
+            // 2. Si vienen IDs nuevos, los añadimos
+            if (etiquetaIds != null && !etiquetaIds.isEmpty()) {
+                // Buscamos todas las etiquetas que coincidan con la lista de IDs
+                Iterable<Etiqueta> etiquetas = etiquetaRepository.findAllById(etiquetaIds);
+
+                // Las añadimos una a una
+                etiquetas.forEach(tarea::addEtiqueta);
             }
             // 3. Guardamos
             tareaRepository.save(tarea);

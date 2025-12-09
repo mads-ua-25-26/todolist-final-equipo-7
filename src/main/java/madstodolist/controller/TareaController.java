@@ -63,8 +63,7 @@ public class TareaController {
     @PostMapping("/usuarios/{id}/tareas/nueva")
     public String nuevaTarea(@PathVariable(value="id") Long idUsuario,
                              @ModelAttribute TareaData tareaData,
-                             // CORRECCIÓN 1: Añadimos este parámetro que faltaba
-                             @RequestParam(value = "etiquetaId", required = false) Long etiquetaId,
+                             @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
                              Model model, RedirectAttributes flash,
                              HttpSession session) {
 
@@ -72,8 +71,8 @@ public class TareaController {
 
         TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
 
-        if (etiquetaId != null) {
-            tareaService.asignarEtiqueta(tarea.getId(), etiquetaId);
+        if (etiquetaIds != null && !etiquetaIds.isEmpty()) {
+            tareaService.actualizarEtiquetas(tarea.getId(), etiquetaIds);
         }
 
         flash.addFlashAttribute("mensaje", "Tarea creada correctamente");
@@ -114,7 +113,7 @@ public class TareaController {
     @PostMapping("/tareas/{id}/editar")
     public String grabaTareaModificada(@PathVariable(value="id") Long idTarea,
                                        @ModelAttribute TareaData tareaData,
-                                       @RequestParam(value = "etiquetaId", required = false) Long etiquetaId,
+                                       @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
                                        Model model, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
@@ -122,15 +121,18 @@ public class TareaController {
         }
 
         Long idUsuario = tarea.getUsuarioId();
-
         comprobarUsuarioLogeado(idUsuario);
 
         tareaService.modificaTarea(idTarea, tareaData.getTitulo(), tareaData.getDescripcion());
-        tareaService.modificarEtiqueta(idTarea, etiquetaId);
+
+        if (etiquetaIds != null) {
+            tareaService.actualizarEtiquetas(idTarea, etiquetaIds);
+        }
 
         flash.addFlashAttribute("mensaje", "Tarea modificada correctamente");
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
     }
+
 
     @DeleteMapping("/tareas/{id}")
     @ResponseBody

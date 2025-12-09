@@ -304,7 +304,7 @@ public class TareaTest {
         // WHEN
         // Asociamos la etiqueta a la tarea
         tarea.addEtiqueta(etiqueta);
-        // Guardamos la tarea (la relación se guarda en la tabla intermedia)
+        // Guardamos la tarea
         tareaRepository.save(tarea);
 
         // THEN
