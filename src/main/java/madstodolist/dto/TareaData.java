@@ -64,10 +64,23 @@ public class TareaData implements Serializable {
         this.etiquetas = etiquetas;
     }
 
+    @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
+    private java.time.LocalDate fechaFinalizacion;
+
+    public java.time.LocalDate getFechaFinalizacion() {
+        return fechaFinalizacion;
+    }
+
+    public void setFechaFinalizacion(java.time.LocalDate fechaFinalizacion) {
+        this.fechaFinalizacion = fechaFinalizacion;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TareaData)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof TareaData))
+            return false;
         TareaData tareaData = (TareaData) o;
         return Objects.equals(id, tareaData.id);
     }

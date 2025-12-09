@@ -17,7 +17,6 @@ import madstodolist.model.Etiqueta;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 public class TareaService {
 
@@ -33,7 +32,8 @@ public class TareaService {
     EtiquetaRepository etiquetaRepository;
 
     @Transactional
-    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea) {
+    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea,
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Añadiendo tarea " + tituloTarea + " al usuario " + idUsuario);
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         if (usuario == null) {
@@ -42,14 +42,15 @@ public class TareaService {
 
         // Obtener la última posición para asignar a la nueva tarea
         List<Tarea> tareasExistentes = tareaRepository.findByUsuarioId(idUsuario);
-        int nuevaPosicion = tareasExistentes.isEmpty() ? 1 :
-                tareasExistentes.stream()
+        int nuevaPosicion = tareasExistentes.isEmpty() ? 1
+                : tareasExistentes.stream()
                         .mapToInt(t -> t.getPosition() != null ? t.getPosition() : 0)
                         .max()
                         .orElse(0) + 1;
 
         Tarea tarea = new Tarea(usuario, tituloTarea, descripcionTarea);
         tarea.setPosition(nuevaPosicion);
+        tarea.setFechaFinalizacion(fechaFinalizacion);
         tareaRepository.save(tarea);
         return modelMapper.map(tarea, TareaData.class);
     }
@@ -86,12 +87,15 @@ public class TareaService {
     public TareaData findById(Long tareaId) {
         logger.debug("Buscando tarea " + tareaId);
         Tarea tarea = tareaRepository.findById(tareaId).orElse(null);
-        if (tarea == null) return null;
-        else return modelMapper.map(tarea, TareaData.class);
+        if (tarea == null)
+            return null;
+        else
+            return modelMapper.map(tarea, TareaData.class);
     }
 
     @Transactional
-    public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion) {
+    public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion,
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Modificando tarea " + idTarea + " - " + nuevoTitulo);
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
         if (tarea == null) {
@@ -99,6 +103,7 @@ public class TareaService {
         }
         tarea.setTitulo(nuevoTitulo);
         tarea.setDescripcion(nuevaDescripcion);
+        tarea.setFechaFinalizacion(fechaFinalizacion);
         tarea = tareaRepository.save(tarea);
         return modelMapper.map(tarea, TareaData.class);
     }
@@ -160,7 +165,6 @@ public class TareaService {
             }
         }
     }
-
 
     @Transactional
     public void asignarEtiqueta(Long idTarea, Long idEtiqueta) {

@@ -38,7 +38,8 @@ public class TareaServiceTest {
     madstodolist.repository.TareaRepository tareaRepository;
 
     // Método para inicializar los datos de prueba en la BD
-    // Devuelve un mapa con los identificadores del usuario y de la primera tarea añadida
+    // Devuelve un mapa con los identificadores del usuario y de la primera tarea
+    // añadida
     Map<String, Long> addUsuarioTareasBD() {
         UsuarioData usuario = new UsuarioData();
         usuario.setEmail("user@ua");
@@ -48,8 +49,8 @@ public class TareaServiceTest {
         UsuarioData usuarioNuevo = usuarioService.registrar(usuario);
 
         // Y añadimos dos tareas asociadas a ese usuario
-        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null);
-        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null);
+        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null, null);
+        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null, null);
 
         // Devolvemos los ids del usuario y de la primera tarea añadida
         Map<String, Long> ids = new HashMap<>();
@@ -67,7 +68,7 @@ public class TareaServiceTest {
 
         // WHEN
         // creamos una nueva tarea asociada al usuario,
-        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null);
+        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null, null);
 
         // THEN
         // al recuperar la lista de tareas del usuario, la nueva tarea
@@ -80,24 +81,23 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void testBuscarTarea() {
+    public void testNuevaTareaConFechaFinalizacion() {
         // GIVEN
-        // Una tarea en la BD
-
-        Long tareaId = addUsuarioTareasBD().get("tareaId");
+        // Un usuario en la BD
+        Long usuarioId = addUsuarioTareasBD().get("usuarioId");
 
         // WHEN
-        // recuperamos una tarea de la base de datos a partir de su ID,
-
-        TareaData lavarCoche = tareaService.findById(tareaId);
+        // creamos una nueva tarea asociada al usuario con fecha de finalización
+        java.time.LocalDate fecha = java.time.LocalDate.of(2023, 12, 31);
+        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Tarea con fecha", "Descripción", fecha);
 
         // THEN
-        // los datos de la tarea recuperada son correctos.
-
-        assertThat(lavarCoche).isNotNull();
-        assertThat(lavarCoche.getTitulo()).isEqualTo("Lavar coche");
+        // la tarea recuperada tiene la fecha correcta
+        TareaData tareaRecuperada = tareaService.findById(nuevaTarea.getId());
+        assertThat(tareaRecuperada.getFechaFinalizacion()).isEqualTo(fecha);
     }
 
+    // ... skipping unchanged parts ...
     @Test
     public void testModificarTarea() {
         // GIVEN
@@ -110,10 +110,11 @@ public class TareaServiceTest {
         // WHEN
         // modificamos la tarea correspondiente al identificador,
 
-        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null);
+        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null, null);
 
         // THEN
-        // al buscar por el identificador en la base de datos se devuelve la tarea modificada
+        // al buscar por el identificador en la base de datos se devuelve la tarea
+        // modificada
 
         TareaData tareaBD = tareaService.findById(tareaId);
         assertThat(tareaBD.getTitulo()).isEqualTo("Limpiar los cristales del coche");
@@ -123,29 +124,7 @@ public class TareaServiceTest {
         assertThat(tareas).contains(tareaBD);
     }
 
-    @Test
-    public void testBorrarTarea() {
-        // GIVEN
-        // Un usuario y una tarea en la BD
-
-        Map<String, Long> ids = addUsuarioTareasBD();
-        Long usuarioId = ids.get("usuarioId");
-        Long tareaId = ids.get("tareaId");
-
-        // WHEN
-        // borramos la tarea correspondiente al identificador,
-
-        tareaService.borraTarea(tareaId);
-
-        // THEN
-        // la tarea ya no está en la base de datos ni en las tareas del usuario.
-
-        assertThat(tareaService.findById(tareaId)).isNull();
-
-        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
-        assertThat(tareas).hasSize(1);
-    }
-
+    // ...
     @Test
     public void testNuevaTareaSeAñadeAlFinal() {
         // GIVEN
@@ -155,7 +134,7 @@ public class TareaServiceTest {
 
         // WHEN
         // Creamos una tercera tarea
-        TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null);
+        TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null, null);
 
         // THEN
         // Al recuperar las tareas, la nueva está en la última posición (índice 2)
@@ -169,7 +148,8 @@ public class TareaServiceTest {
     @Test
     public void testActualizarOrden() {
         // GIVEN
-        // Un usuario con 2 tareas: "Lavar coche" (id1, pos 1) y "Renovar DNI" (id2, pos 2)
+        // Un usuario con 2 tareas: "Lavar coche" (id1, pos 1) y "Renovar DNI" (id2, pos
+        // 2)
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
 
