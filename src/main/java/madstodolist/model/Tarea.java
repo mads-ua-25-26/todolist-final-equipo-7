@@ -3,7 +3,9 @@ package madstodolist.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "tareas")
@@ -27,6 +29,25 @@ public class Tarea implements Serializable {
     // el ID del usuario con el que está asociado una tarea
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    @OneToMany(mappedBy = "tarea", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Subtarea> subtareas = new HashSet<>();
+
+    public Set<Subtarea> getSubtareas() {
+        return subtareas;
+    }
+
+    public void setSubtareas(Set<Subtarea> subtareas) {
+        this.subtareas = subtareas;
+    }
+
+    // Helper para añadir subtarea y mantener consistencia
+    public void addSubtarea(Subtarea subtarea) {
+        this.subtareas.add(subtarea);
+        subtarea.setTarea(this);
+    }
+
+
 
     // Constructor vacío necesario para JPA/Hibernate.
     // No debe usarse desde la aplicación.
