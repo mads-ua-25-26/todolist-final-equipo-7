@@ -1,6 +1,9 @@
 package madstodolist.service;
 
+import madstodolist.dto.SubtareaData;
+import madstodolist.model.Subtarea;
 import madstodolist.model.Tarea;
+import madstodolist.repository.SubtareaRepository;
 import madstodolist.repository.TareaRepository;
 import madstodolist.model.Usuario;
 import madstodolist.repository.UsuarioRepository;
@@ -27,6 +30,8 @@ public class TareaService {
     private TareaRepository tareaRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private SubtareaRepository subtareaRepository;
 
     @Transactional
     public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea) {
@@ -155,5 +160,56 @@ public class TareaService {
                 }
             }
         }
+    }
+
+    @Transactional
+    public SubtareaData nuevaSubtarea(Long idTarea, String texto) {
+        logger.debug("Añadiendo subtarea a tarea " + idTarea);
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new TareaServiceException("Tarea no encontrada: " + idTarea));
+
+        Subtarea subtarea = new Subtarea(tarea, texto);
+        tarea.addSubtarea(subtarea);
+
+        // Guardamos la subtarea (al tener CascadeType.ALL en Tarea,
+        // guardar la tarea también funcionaría, pero esto es más explícito)
+        subtareaRepository.save(subtarea);
+
+        return modelMapper.map(subtarea, SubtareaData.class);
+    }
+
+    @Transactional
+    public SubtareaData cambiarEstadoSubtarea(Long idSubtarea) {
+        Subtarea subtarea = subtareaRepository.findById(idSubtarea)
+                .orElseThrow(() -> new TareaServiceException("Subtarea no encontrada"));
+
+        subtarea.setCompletado(!subtarea.getCompletado()); // Invertir estado
+        subtareaRepository.save(subtarea);
+
+        return modelMapper.map(subtarea, SubtareaData.class);
+    }
+
+    @Transactional
+    public void borrarSubtarea(Long idSubtarea) {
+        Subtarea subtarea = subtareaRepository.findById(idSubtarea)
+                .orElseThrow(() -> new TareaServiceException("Subtarea no encontrada"));
+
+        // Es importante eliminar la referencia de la lista de la tarea padre
+        // para que Hibernate sincronice bien el estado si la tarea sigue en memoria
+        subtarea.getTarea().getSubtareas().remove(subtarea);
+
+        subtareaRepository.delete(subtarea);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubtareaData> obtenerSubtareas(Long idTarea) {
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new TareaServiceException("Tarea no encontrada"));
+
+        // Convertimos el Set a List y ordenamos por ID (orden de creación)
+        return tarea.getSubtareas().stream()
+                .sorted((a, b) -> a.getId().compareTo(b.getId()))
+                .map(s -> modelMapper.map(s, SubtareaData.class))
+                .collect(Collectors.toList());
     }
 }
