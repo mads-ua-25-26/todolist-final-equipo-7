@@ -105,6 +105,8 @@ public class TareaController {
         List<TareaData> tareas = tareaService.allTareasUsuario(idUsuario);
         model.addAttribute("usuario", usuario);
         model.addAttribute("tareas", tareas);
+        model.addAttribute("today", java.time.LocalDate.now());
+        model.addAttribute("tomorrow", java.time.LocalDate.now().plusDays(1));
         return "listaTareas";
     }
 

@@ -28,7 +28,8 @@
                         </tr>
                     </thead>
                     <tbody id="sortable-tareas">
-                        <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item">
+                        <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item"
+                            th:classappend="${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(today)} ? 'text-danger' : (${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(tomorrow)} ? 'text-warning' : '')">
                             <td class="drag-handle" style="cursor: move; text-align: center;">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
                                     style="color: #999;">
