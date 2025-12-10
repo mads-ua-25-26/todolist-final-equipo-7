@@ -15,6 +15,8 @@ public class TareaData implements Serializable {
     private Long usuarioId;
     private Integer position;
     private Set<Etiqueta> etiquetas;
+    @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
+    private java.time.LocalDate fechaFinalizacion;
 
     public Long getId() {
         return id;
@@ -63,9 +65,6 @@ public class TareaData implements Serializable {
     public void setEtiquetas(Set<Etiqueta> etiquetas) {
         this.etiquetas = etiquetas;
     }
-
-    @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
-    private java.time.LocalDate fechaFinalizacion;
 
     public java.time.LocalDate getFechaFinalizacion() {
         return fechaFinalizacion;
