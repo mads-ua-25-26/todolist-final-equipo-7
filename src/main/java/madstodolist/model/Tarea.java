@@ -2,6 +2,7 @@ package madstodolist.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.HashSet;
@@ -22,6 +23,9 @@ public class Tarea implements Serializable {
     @Column(name = "position")
     private Integer position;
 
+    @Column(name = "fecha_finalizacion")
+    private LocalDate fechaFinalizacion;
+
     @NotNull
     // Relación muchos-a-uno entre tareas y usuario
     @ManyToOne
@@ -32,16 +36,13 @@ public class Tarea implements Serializable {
 
     // Relación muchos a muchos con Etiquetas
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "tarea_etiquetas",
-            joinColumns = @JoinColumn(name = "tarea_id"),
-            inverseJoinColumns = @JoinColumn(name = "etiqueta_id")
-    )
+    @JoinTable(name = "tarea_etiquetas", joinColumns = @JoinColumn(name = "tarea_id"), inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
     private Set<Etiqueta> etiquetas = new HashSet<>();
 
     // Constructor vacío necesario para JPA/Hibernate.
     // No debe usarse desde la aplicación.
-    public Tarea() {}
+    public Tarea() {
+    }
 
     // Al crear una tarea la asociamos automáticamente a un usuario
     public Tarea(Usuario usuario, String titulo) {
@@ -101,7 +102,7 @@ public class Tarea implements Serializable {
 
     public void setUsuario(Usuario usuario) {
         // Comprueba si el usuario ya está establecido
-        if(this.usuario != usuario) {
+        if (this.usuario != usuario) {
             this.usuario = usuario;
             // Añade la tarea a la lista de tareas del usuario
             usuario.addTarea(this);
@@ -110,8 +111,10 @@ public class Tarea implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Tarea tarea = (Tarea) o;
         if (id != null && tarea.id != null)
             // Si tenemos los ID, comparamos por ID
@@ -129,10 +132,18 @@ public class Tarea implements Serializable {
     public Integer getPosition() {
         return position;
     }
+
     public void setPosition(Integer position) {
         this.position = position;
     }
 
+    public LocalDate getFechaFinalizacion() {
+        return fechaFinalizacion;
+    }
+
+    public void setFechaFinalizacion(LocalDate fechaFinalizacion) {
+        this.fechaFinalizacion = fechaFinalizacion;
+    }
 
     // Métodos que ayudan a la entidad Etiqueta
     public void addEtiqueta(Etiqueta etiqueta) {

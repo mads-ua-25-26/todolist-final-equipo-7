@@ -61,9 +61,9 @@ public class TareaController {
     }
 
     @GetMapping("/usuarios/{id}/tareas/nueva")
-    public String formNuevaTarea(@PathVariable(value="id") Long idUsuario,
-                                 @ModelAttribute TareaData tareaData, Model model,
-                                 HttpSession session) {
+    public String formNuevaTarea(@PathVariable(value = "id") Long idUsuario,
+            @ModelAttribute TareaData tareaData, Model model,
+            HttpSession session) {
 
         comprobarUsuarioLogeado(idUsuario);
 
@@ -77,15 +77,16 @@ public class TareaController {
     }
 
     @PostMapping("/usuarios/{id}/tareas/nueva")
-    public String nuevaTarea(@PathVariable(value="id") Long idUsuario,
-                             @ModelAttribute TareaData tareaData,
-                             @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
-                             Model model, RedirectAttributes flash,
-                             HttpSession session) {
+    public String nuevaTarea(@PathVariable(value = "id") Long idUsuario,
+            @ModelAttribute TareaData tareaData,
+            @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
+            Model model, RedirectAttributes flash,
+            HttpSession session) {
 
         comprobarUsuarioLogeado(idUsuario);
 
-        TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
+        TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion(),
+                tareaData.getFechaFinalizacion());
 
         if (etiquetaIds != null && !etiquetaIds.isEmpty()) {
             tareaService.actualizarEtiquetas(tarea.getId(), etiquetaIds);
@@ -96,7 +97,7 @@ public class TareaController {
     }
 
     @GetMapping("/usuarios/{id}/tareas")
-    public String listadoTareas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
+    public String listadoTareas(@PathVariable(value = "id") Long idUsuario, Model model, HttpSession session) {
 
         comprobarUsuarioLogeado(idUsuario);
 
@@ -108,8 +109,8 @@ public class TareaController {
     }
 
     @GetMapping("/tareas/{id}/editar")
-    public String formEditaTarea(@PathVariable(value="id") Long idTarea, @ModelAttribute TareaData tareaData,
-                                 Model model, HttpSession session) {
+    public String formEditaTarea(@PathVariable(value = "id") Long idTarea, @ModelAttribute TareaData tareaData,
+            Model model, HttpSession session) {
 
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
@@ -123,14 +124,15 @@ public class TareaController {
 
         tareaData.setTitulo(tarea.getTitulo());
         tareaData.setDescripcion(tarea.getDescripcion());
+        tareaData.setFechaFinalizacion(tarea.getFechaFinalizacion());
         return "formEditarTarea";
     }
 
     @PostMapping("/tareas/{id}/editar")
-    public String grabaTareaModificada(@PathVariable(value="id") Long idTarea,
-                                       @ModelAttribute TareaData tareaData,
-                                       @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
-                                       Model model, RedirectAttributes flash, HttpSession session) {
+    public String grabaTareaModificada(@PathVariable(value = "id") Long idTarea,
+            @ModelAttribute TareaData tareaData,
+            @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
+            Model model, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
@@ -139,7 +141,8 @@ public class TareaController {
         Long idUsuario = tarea.getUsuarioId();
         comprobarUsuarioLogeado(idUsuario);
 
-        tareaService.modificaTarea(idTarea, tareaData.getTitulo(), tareaData.getDescripcion());
+        tareaService.modificaTarea(idTarea, tareaData.getTitulo(), tareaData.getDescripcion(),
+                tareaData.getFechaFinalizacion());
 
         if (etiquetaIds != null) {
             tareaService.actualizarEtiquetas(idTarea, etiquetaIds);
@@ -149,12 +152,12 @@ public class TareaController {
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
     }
 
-
     @DeleteMapping("/tareas/{id}")
     @ResponseBody
-    // La anotación @ResponseBody sirve para que la cadena devuelta sea la resupuesta
+    // La anotación @ResponseBody sirve para que la cadena devuelta sea la
+    // resupuesta
     // de la petición HTTP, en lugar de una plantilla thymeleaf
-    public String borrarTarea(@PathVariable(value="id") Long idTarea, RedirectAttributes flash, HttpSession session) {
+    public String borrarTarea(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
@@ -169,7 +172,7 @@ public class TareaController {
     @PostMapping("/tareas/reordenar")
     @ResponseBody
     public ResponseEntity<?> reordenarTareas(@RequestBody Map<String, List<Long>> payload,
-                                             HttpSession session) {
+            HttpSession session) {
         // Verificar que el usuario está autenticado
         Long idUsuario = managerUserSession.usuarioLogeado();
 
@@ -204,7 +207,7 @@ public class TareaController {
     }
 
     @GetMapping("/usuarios/{id}/etiquetas")
-    public String editarEtiquetas(@PathVariable(value="id") Long idUsuario, Model model) {
+    public String editarEtiquetas(@PathVariable(value = "id") Long idUsuario, Model model) {
         comprobarUsuarioLogeado(idUsuario);
         UsuarioData usuario = usuarioService.findById(idUsuario);
 
@@ -220,9 +223,9 @@ public class TareaController {
     }
 
     @PostMapping("/usuarios/{id}/etiquetas")
-    public String guardarEtiquetas(@PathVariable(value="id") Long idUsuario,
-                                   @ModelAttribute EtiquetaData data,
-                                   RedirectAttributes flash) {
+    public String guardarEtiquetas(@PathVariable(value = "id") Long idUsuario,
+            @ModelAttribute EtiquetaData data,
+            RedirectAttributes flash) {
         comprobarUsuarioLogeado(idUsuario);
 
         etiquetaService.guardarEtiquetas(idUsuario, data.getEtiquetas());
@@ -231,4 +234,3 @@ public class TareaController {
         return "redirect:/usuarios/" + idUsuario + "/tareas";
     }
 }
-
