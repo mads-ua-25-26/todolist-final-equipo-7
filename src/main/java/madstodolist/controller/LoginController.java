@@ -28,11 +28,6 @@ public class LoginController {
     @Autowired
     ManagerUserSession managerUserSession;
 
-    @GetMapping("/")
-    public String home(Model model) {
-        return "redirect:/login";
-    }
-
     @GetMapping("/login")
     public String loginForm(Model model) {
         model.addAttribute("loginData", new LoginData());
@@ -67,8 +62,8 @@ public class LoginController {
         return "formRegistro";
     }
 
-   @PostMapping("/registro")
-   public String registroSubmit(@Valid RegistroData registroData, BindingResult result, Model model) {
+    @PostMapping("/registro")
+    public String registroSubmit(@Valid RegistroData registroData, BindingResult result, Model model) {
 
         if (result.hasErrors()) {
             return "formRegistro";
@@ -88,13 +83,13 @@ public class LoginController {
 
         usuarioService.registrar(usuario);
         return "redirect:/login";
-   }
+    }
 
-   @GetMapping("/logout")
-   public String logout(HttpSession session) {
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
         managerUserSession.logout();
         return "redirect:/login";
-   }
+    }
 
     @GetMapping("/registrados")
     public String usuariosRegistrados(Model model) {
@@ -104,7 +99,7 @@ public class LoginController {
     }
 
     @GetMapping("/registrados/{id}")
-    public String descripcionUsuario(@PathVariable(value="id") Long idUsuario, Model model) {
+    public String descripcionUsuario(@PathVariable(value = "id") Long idUsuario, Model model) {
         UsuarioData usuario = usuarioService.findById(idUsuario);
         if (usuario == null) {
             throw new UsuarioNotFoundException();

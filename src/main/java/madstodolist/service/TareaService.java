@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.modelmapper.ModelMapper;
+import madstodolist.repository.EtiquetaRepository;
+import madstodolist.model.Etiqueta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,16 +32,23 @@ public class TareaService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    EtiquetaRepository etiquetaRepository;
 
     // Crear una nueva tarea raíz para un usuario
     @Transactional
-    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea) {
+    public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea,
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Añadiendo tarea " + tituloTarea + " al usuario " + idUsuario);
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         if (usuario == null) {
             throw new TareaServiceException("Usuario " + idUsuario + " no existe al crear tarea " + tituloTarea);
         }
 
+        // Obtener la última posición para asignar a la nueva tarea
+        List<Tarea> tareasExistentes = tareaRepository.findByUsuarioId(idUsuario);
+        int nuevaPosicion = tareasExistentes.isEmpty() ? 1
+                : tareasExistentes.stream()
         // Obtener la última posición para asignar a la nueva tarea (solo tareas raíz)
         List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(idUsuario);
         int nuevaPosicion = tareasRaiz.isEmpty() ? 1 :
@@ -50,6 +59,7 @@ public class TareaService {
 
         Tarea tarea = new Tarea(usuario, tituloTarea, descripcionTarea);
         tarea.setPosition(nuevaPosicion);
+        tarea.setFechaFinalizacion(fechaFinalizacion);
         tareaRepository.save(tarea);
         return convertirATareaData(tarea);
     }
@@ -110,12 +120,17 @@ public class TareaService {
     public TareaData findById(Long tareaId) {
         logger.debug("Buscando tarea " + tareaId);
         Tarea tarea = tareaRepository.findById(tareaId).orElse(null);
+        if (tarea == null)
+            return null;
+        else
+            return modelMapper.map(tarea, TareaData.class);
         if (tarea == null) return null;
         return convertirATareaData(tarea);
     }
 
     @Transactional
-    public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion) {
+    public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion,
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Modificando tarea " + idTarea + " - " + nuevoTitulo);
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
         if (tarea == null) {
@@ -123,6 +138,7 @@ public class TareaService {
         }
         tarea.setTitulo(nuevoTitulo);
         tarea.setDescripcion(nuevaDescripcion);
+        tarea.setFechaFinalizacion(fechaFinalizacion);
         tarea = tareaRepository.save(tarea);
         return convertirATareaData(tarea);
     }
@@ -190,6 +206,37 @@ public class TareaService {
         }
     }
 
+    @Transactional
+    public void asignarEtiqueta(Long idTarea, Long idEtiqueta) {
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        Etiqueta etiqueta = etiquetaRepository.findById(idEtiqueta).orElse(null);
+
+        if (tarea != null && etiqueta != null) {
+            tarea.addEtiqueta(etiqueta);
+            tareaRepository.save(tarea);
+        } else {
+            throw new TareaServiceException("No se encontró la tarea o la etiqueta");
+        }
+    }
+
+    @Transactional
+    public void actualizarEtiquetas(Long idTarea, List<Long> etiquetaIds) {
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+
+        if (tarea != null) {
+            // 1. Borramos las que tenga asignadas actualmente
+            tarea.getEtiquetas().clear();
+
+            // 2. Si vienen IDs nuevos, los añadimos
+            if (etiquetaIds != null && !etiquetaIds.isEmpty()) {
+                // Buscamos todas las etiquetas que coincidan con la lista de IDs
+                Iterable<Etiqueta> etiquetas = etiquetaRepository.findAllById(etiquetaIds);
+
+                // Las añadimos una a una
+                etiquetas.forEach(tarea::addEtiqueta);
+            }
+            // 3. Guardamos
+            tareaRepository.save(tarea);
     // Método auxiliar para convertir Tarea a TareaData (incluyendo subtareas)
     private TareaData convertirATareaData(Tarea tarea) {
         TareaData tareaData = new TareaData();
