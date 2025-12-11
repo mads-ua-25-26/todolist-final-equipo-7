@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
+import madstodolist.model.Etiqueta;
 
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,12 @@ public class TareaTest {
     @Autowired
     TareaRepository tareaRepository;
 
+    @Autowired
+    EtiquetaRepository etiquetaRepository;
+
+    //
+    // Tests modelo Tarea en memoria, sin la conexión con la BD
+    //
     // Tests modelo Tarea en memoria
 
     @Test
@@ -260,11 +267,29 @@ public class TareaTest {
 
     @Test
     @Transactional
+    public void añadirEtiquetaAUnaTarea() {
     public void eliminarTareaPadreEliminaSubtareas() {
         // GIVEN
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
 
+        Tarea tarea = new Tarea(usuario, "Comprar leche");
+        tareaRepository.save(tarea);
+
+        // CORRECCIÓN: Pasamos el usuario al constructor
+        Etiqueta etiqueta = new Etiqueta(usuario, "Compras", "green");
+        etiquetaRepository.save(etiqueta);
+
+        // WHEN
+        tarea.addEtiqueta(etiqueta);
+        tareaRepository.save(tarea);
+
+        // THEN
+        Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(1);
+        assertThat(tareaBD.getEtiquetas()).contains(etiqueta);
+    }
+}
         Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
         tareaRepository.save(tareaPadre);
         Long tareaPadreId = tareaPadre.getId();

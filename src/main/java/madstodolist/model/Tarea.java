@@ -2,9 +2,11 @@ package madstodolist.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,12 +26,24 @@ public class Tarea implements Serializable {
 
     private Integer position;
 
+    @Column(name = "fecha_finalizacion")
+    private LocalDate fechaFinalizacion;
+
     // Relación con Usuario (muchas tareas pertenecen a un usuario)
     @NotNull
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
+    // Relación muchos a muchos con Etiquetas
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tarea_etiquetas", joinColumns = @JoinColumn(name = "tarea_id"), inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
+    private Set<Etiqueta> etiquetas = new HashSet<>();
+
+    // Constructor vacío necesario para JPA/Hibernate.
+    // No debe usarse desde la aplicación.
+    public Tarea() {
+    }
     // Relación recursiva: una tarea puede tener subtareas
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tarea_padre_id")
@@ -102,6 +116,24 @@ public class Tarea implements Serializable {
         return usuario;
     }
 
+    // Getters y setters de Etiquetas
+    public Set<Etiqueta> getEtiquetas() {
+        return etiquetas;
+    }
+
+    public void setEtiquetas(Set<Etiqueta> etiquetas) {
+        this.etiquetas = etiquetas;
+    }
+
+    // Método para establecer la relación con el usuario
+
+    public void setUsuario(Usuario usuario) {
+        // Comprueba si el usuario ya está establecido
+        if (this.usuario != usuario) {
+            this.usuario = usuario;
+            // Añade la tarea a la lista de tareas del usuario
+            usuario.addTarea(this);
+        }
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
@@ -142,8 +174,10 @@ public class Tarea implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Tarea tarea = (Tarea) o;
         if (id != null && tarea.id != null)
             return Objects.equals(id, tarea.id);
@@ -154,6 +188,35 @@ public class Tarea implements Serializable {
 
     @Override
     public int hashCode() {
+        return Objects.hash(titulo, usuario);
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+
+    public LocalDate getFechaFinalizacion() {
+        return fechaFinalizacion;
+    }
+
+    public void setFechaFinalizacion(LocalDate fechaFinalizacion) {
+        this.fechaFinalizacion = fechaFinalizacion;
+    }
+
+    // Métodos que ayudan a la entidad Etiqueta
+    public void addEtiqueta(Etiqueta etiqueta) {
+        // Al ser un Set, si ya existe no la duplica
+        this.etiquetas.add(etiqueta);
+    }
+
+    public void removeEtiqueta(Etiqueta etiqueta) {
+        this.etiquetas.remove(etiqueta);
+    }
+}
         return Objects.hash(titulo);
     }
 }

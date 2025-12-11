@@ -1,30 +1,117 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head th:replace="fragments :: head (titulo='Nueva Tarea')"></head>
 
 <body>
+
 <div class="container-fluid">
 
     <h2 th:text="'Nueva tarea para el usuario ' + ${usuario.getNombre()}"></h2>
 
-    <form method="post" th:action="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}" th:object="${tareaData}">
+    <form method="post"
+          th:action="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}"
+          th:object="${tareaData}">
+
         <div class="col-6">
-        <div class="form-group">
-            <label for="titulo">Título de la tarea:</label>
-            <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
-        </div>
-        <div class="form-group">
-            <label for="descripcion">Descripción de la tarea:</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit">Crear tarea</button>
-        <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Cancelar</a>
+
+            <div class="form-group">
+                <label for="titulo">Título de la tarea:</label>
+                <input class="form-control"
+                       id="titulo"
+                       name="titulo"
+                       type="text"
+                       required
+                       th:field="*{titulo}" />
+            </div>
+
+            <div class="form-group">
+                <label for="select-etiquetas">Etiquetas:</label>
+                <select class="form-control"
+                        id="select-etiquetas"
+                        onchange="agregarEtiqueta(this)">
+                    <option value="" selected disabled>Selecciona etiquetas...</option>
+                    <option th:each="etiqueta : ${etiquetas}"
+                            th:value="${etiqueta.id}"
+                            th:text="${etiqueta.nombre}"
+                            th:data-color="${etiqueta.color}">
+                    </option>
+                </select>
+            </div>
+
+            <div id="etiquetas-seleccionadas" class="mb-3"></div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción de la tarea:</label>
+                <textarea class="form-control"
+                          id="descripcion"
+                          name="descripcion"
+                          rows="3"
+                          th:field="*{descripcion}">
+                </textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="fechaFinalizacion">Fecha de finalización:</label>
+                <input class="form-control"
+                       id="fechaFinalizacion"
+                       name="fechaFinalizacion"
+                       type="date"
+                       th:field="*{fechaFinalizacion}" />
+            </div>
+
+            <p>
+                <button class="btn btn-primary" type="submit">Crear tarea</button>
+                <a class="btn btn-link"
+                   th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                    Cancelar
+                </a>
+            </p>
+
         </div>
     </form>
+
 </div>
 
-<div th:replace="fragments::javascript"/>
+<div th:replace="fragments::javascript"></div>
+
+<script>
+    const etiquetasSeleccionadas = new Set();
+
+    function agregarEtiqueta(select) {
+        const option = select.options[select.selectedIndex];
+        const id = option.value;
+        const nombre = option.text;
+        const color = option.getAttribute('data-color');
+
+        if (!id) return;
+
+        etiquetasSeleccionadas.add(id);
+
+        const container = document.getElementById('etiquetas-seleccionadas');
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-pill mr-2 mb-2 p-2';
+        badge.style.backgroundColor = color;
+        badge.style.color = 'white';
+        badge.style.cursor = 'pointer';
+        badge.innerHTML = `${nombre} ×`;
+        badge.title = "Haz clic para eliminar";
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'etiquetaIds';
+        input.value = id;
+
+        badge.onclick = function () {
+            container.removeChild(badge);
+            etiquetasSeleccionadas.delete(id);
+        };
+
+        badge.appendChild(input);
+        container.appendChild(badge);
+        select.value = "";
+    }
+</script>
 
 </body>
 </html>
