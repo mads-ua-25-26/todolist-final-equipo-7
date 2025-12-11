@@ -77,27 +77,23 @@ public class TareaWebTest {
         }
 
         @Test
-        public void listaTareas() throws Exception {
+        public void listadoTareas() throws Exception {
                 // GIVEN
                 // Un usuario con dos tareas en la BD
                 Long usuarioId = addUsuarioTareasBD().get("usuarioId");
 
-                // Moqueamos el método usuarioLogeado para que devuelva el usuario 1L,
-                // el mismo que se está usando en la petición. De esta forma evitamos
-                // que salte la excepción de que el usuario que está haciendo la
-                // petición no está logeado.
+                // Moqueamos el método usuarioLogeado
                 when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
 
                 // WHEN, THEN
-                // se realiza la petición GET al listado de tareas del usuario,
-                // el HTML devuelto contiene las descripciones de sus tareas.
-
                 String url = "/usuarios/" + usuarioId.toString() + "/tareas";
 
                 this.mockMvc.perform(get(url))
                                 .andExpect((content().string(allOf(
                                                 containsString("Lavar coche"),
-                                                containsString("Renovar DNI")))));
+                                                containsString("Renovar DNI")))))
+                                .andExpect(model().attributeExists("today"))
+                                .andExpect(model().attributeExists("tomorrow"));
         }
 
         @Test
@@ -203,7 +199,8 @@ public class TareaWebTest {
 
                 this.mockMvc.perform(post(urlEditar)
                                 .param("titulo", "Limpiar cristales coche")
-                                .param("descripcion", ""))
+                                .param("descripcion", "")
+                                .param("fechaFinalizacion", "2023-12-31"))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl(urlRedirect));
 
@@ -213,7 +210,8 @@ public class TareaWebTest {
                 String urlListado = "/usuarios/" + usuarioId + "/tareas";
 
                 this.mockMvc.perform(get(urlListado))
-                                .andExpect(content().string(containsString("Limpiar cristales coche")));
+                                .andExpect(content().string(containsString("Limpiar cristales coche")))
+                                .andExpect(content().string(containsString("2023-12-31")));
         }
 
         @Test

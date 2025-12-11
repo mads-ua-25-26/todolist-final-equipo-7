@@ -21,6 +21,11 @@ public class HomeController {
     @Autowired
     ManagerUserSession managerUserSession;
 
+    @GetMapping("/")
+    public String home() {
+        return "landing";
+    }
+
     // Página de "Acerca de" (/about)
     @GetMapping("/about")
     public String aboutPage(Model model) {
@@ -58,4 +63,3 @@ public class HomeController {
         return "perfil"; // plantilla perfil.html
     }
 }
-
