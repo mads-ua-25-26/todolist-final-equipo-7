@@ -8,23 +8,30 @@
 
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav align-items-center">
-          <li th:if="${isLoggedIn and usuarioId != null}" class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTareas" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Tareas
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownTareas">
-                  <li>
-                      <a class="dropdown-item" th:href="@{/usuarios/{id}/tareas(id=${usuarioId})}">Tareas pendientes</a>
-                  </li>
-                  <li>
-                      <a class="dropdown-item" th:href="@{/usuarios/{id}/tareas/completadas(id=${usuarioId})}">Tareas completadas</a>
-                  </li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li>
-                      <a class="dropdown-item" th:href="@{/usuarios/{id}/etiquetas(id=${usuarioId})}">Modificar etiquetas</a>
-                  </li>
-              </ul>
-          </li>
+        <li th:if="${isLoggedIn and usuarioId != null}" class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTareas" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Tareas
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownTareas">
+            <li>
+              <a class="dropdown-item" th:href="@{/usuarios/{id}/tareas(id=${usuarioId})}">Tareas pendientes</a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/usuarios/{id}/tareas/completadas(id=${usuarioId})}">Tareas
+                completadas</a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/usuarios/{id}/etiquetas(id=${usuarioId})}">Modificar etiquetas</a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/usuarios/{id}/tareas/borradas(id=${usuarioId})}">Papelera</a>
+            </li>
+          </ul>
+        </li>
         <li class="nav-item">
           <a class="nav-link" th:href="@{/registrados}">Usuarios</a>
         </li>

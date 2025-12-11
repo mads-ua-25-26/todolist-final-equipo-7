@@ -39,7 +39,7 @@ public class TareaService {
     // Crear una nueva tarea raíz para un usuario
     @Transactional
     public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea,
-                                       java.time.LocalDate fechaFinalizacion) {
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Añadiendo tarea " + tituloTarea + " al usuario " + idUsuario);
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         if (usuario == null) {
@@ -48,8 +48,8 @@ public class TareaService {
 
         // Obtener la última posición para asignar a la nueva tarea (solo tareas raíz)
         List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(idUsuario);
-        int nuevaPosicion = tareasRaiz.isEmpty() ? 1 :
-                tareasRaiz.stream()
+        int nuevaPosicion = tareasRaiz.isEmpty() ? 1
+                : tareasRaiz.stream()
                         .mapToInt(t -> t.getPosition() != null ? t.getPosition() : 0)
                         .max()
                         .orElse(0) + 1;
@@ -75,9 +75,13 @@ public class TareaService {
         return convertirATareaData(subtarea);
     }
 
-    // Listar todas las tareas raíz de un usuario (sin subtareas en la lista principal)
+    // Listar todas las tareas raíz de un usuario (sin subtareas en la lista
+    // principal)
+    // Listar todas las tareas raíz de un usuario (sin subtareas en la lista
+    // principal)
     @Transactional(readOnly = true)
     public List<TareaData> allTareasUsuario(Long idUsuario) {
+        // Ahora esto devuelve solo las visibles
         List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(idUsuario);
 
         // Inicializar posiciones si no existen
@@ -101,18 +105,32 @@ public class TareaService {
                 .collect(Collectors.toList());
     }
 
-    // Listar tareas raíz de un usuario filtrando por estado (completadas o pendientes)
+    // Listar todas las tareas borradas de un usuario
+    @Transactional(readOnly = true)
+    public List<TareaData> allTareasBorradasUsuario(Long idUsuario) {
+        List<Tarea> tareasBorradas = tareaRepository.findTareasBorradasByUsuarioId(idUsuario);
+
+        // Convertir a TareaData
+        return tareasBorradas.stream()
+                .map(this::convertirATareaData)
+                .collect(Collectors.toList());
+    }
+
+    // Listar tareas raíz de un usuario filtrando por estado (completadas o
+    // pendientes)
     @Transactional(readOnly = true)
     public List<TareaData> tareasUsuarioPorEstado(Long idUsuario, Boolean completada) {
         // Usamos la nueva consulta del repositorio
         List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioIdAndCompletada(idUsuario, completada);
 
-        // Inicializar posiciones si fuera necesario (solo para las pendientes tiene sentido ordenar, pero lo dejamos genérico)
+        // Inicializar posiciones si fuera necesario (solo para las pendientes tiene
+        // sentido ordenar, pero lo dejamos genérico)
         if (!completada) {
             inicializarPosicionesSiNecesario(tareasRaiz);
         }
 
-        // Ordenar: Las pendientes por posición, las completadas por ID (o fecha si quisieras)
+        // Ordenar: Las pendientes por posición, las completadas por ID (o fecha si
+        // quisieras)
         tareasRaiz.sort((t1, t2) -> {
             if (!completada && t1.getPosition() != null && t2.getPosition() != null) {
                 return t1.getPosition().compareTo(t2.getPosition());
@@ -141,13 +159,14 @@ public class TareaService {
     public TareaData findById(Long tareaId) {
         logger.debug("Buscando tarea " + tareaId);
         Tarea tarea = tareaRepository.findById(tareaId).orElse(null);
-        if (tarea == null) return null;
+        if (tarea == null)
+            return null;
         return convertirATareaData(tarea);
     }
 
     @Transactional
     public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion,
-                                   java.time.LocalDate fechaFinalizacion) {
+            java.time.LocalDate fechaFinalizacion) {
         logger.debug("Modificando tarea " + idTarea + " - " + nuevoTitulo);
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
         if (tarea == null) {
@@ -167,8 +186,29 @@ public class TareaService {
         if (tarea == null) {
             throw new TareaServiceException("No existe tarea con id " + idTarea);
         }
-        // Al tener cascade = ALL y orphanRemoval = true, las subtareas se borrarán automáticamente
-        tareaRepository.delete(tarea);
+
+        // Soft delete: marcamos como no visible
+        tarea.setVisible(false);
+        // También ocultamos sus subtareas
+        if (tarea.getSubtareas() != null) {
+            for (Tarea subtarea : tarea.getSubtareas()) {
+                subtarea.setVisible(false);
+            }
+        }
+        tareaRepository.save(tarea);
+    }
+
+    @Transactional
+    public void restaurarTarea(Long idTarea) {
+        logger.debug("Restaurando tarea " + idTarea);
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        if (tarea == null) {
+            throw new TareaServiceException("No existe tarea con id " + idTarea);
+        }
+
+        // Restaurar: marcamos como visible
+        tarea.setVisible(true);
+        tareaRepository.save(tarea);
     }
 
     @Transactional(readOnly = true)
@@ -311,7 +351,8 @@ public class TareaService {
             String key = entry.getKey();
             List<Long> ids = entry.getValue();
 
-            if (ids == null || ids.isEmpty()) continue;
+            if (ids == null || ids.isEmpty())
+                continue;
 
             if (key.equals("orden_root")) {
                 // Reordenar tareas raíz
@@ -332,7 +373,8 @@ public class TareaService {
     public void actualizarOrdenSubtareas(Long idTareaPadre, List<Long> ordenSubtareas) {
         // Verificar que la tarea padre existe
         Tarea padre = tareaRepository.findById(idTareaPadre).orElse(null);
-        if (padre == null) return;
+        if (padre == null)
+            return;
 
         for (int i = 0; i < ordenSubtareas.size(); i++) {
             Long subId = ordenSubtareas.get(i);

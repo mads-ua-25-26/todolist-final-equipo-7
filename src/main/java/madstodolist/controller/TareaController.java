@@ -61,9 +61,9 @@ public class TareaController {
     }
 
     @GetMapping("/usuarios/{id}/tareas/nueva")
-    public String formNuevaTarea(@PathVariable(value="id") Long idUsuario,
-                                 @ModelAttribute TareaData tareaData, Model model,
-                                 HttpSession session) {
+    public String formNuevaTarea(@PathVariable(value = "id") Long idUsuario,
+            @ModelAttribute TareaData tareaData, Model model,
+            HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
         UsuarioData usuario = usuarioService.findById(idUsuario);
         model.addAttribute("usuario", usuario);
@@ -75,11 +75,11 @@ public class TareaController {
     }
 
     @PostMapping("/usuarios/{id}/tareas/nueva")
-    public String nuevaTarea(@PathVariable(value="id") Long idUsuario,
-                             @ModelAttribute TareaData tareaData,
-                             @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
-                             Model model, RedirectAttributes flash,
-                             HttpSession session) {
+    public String nuevaTarea(@PathVariable(value = "id") Long idUsuario,
+            @ModelAttribute TareaData tareaData,
+            @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
+            Model model, RedirectAttributes flash,
+            HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
 
         TareaData tarea = tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(),
@@ -94,7 +94,7 @@ public class TareaController {
     }
 
     @GetMapping("/usuarios/{id}/tareas")
-    public String listadoTareas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
+    public String listadoTareas(@PathVariable(value = "id") Long idUsuario, Model model, HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
         UsuarioData usuario = usuarioService.findById(idUsuario);
 
@@ -109,7 +109,8 @@ public class TareaController {
 
     // Listado de tareas completadas
     @GetMapping("/usuarios/{id}/tareas/completadas")
-    public String listadoTareasCompletadas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
+    public String listadoTareasCompletadas(@PathVariable(value = "id") Long idUsuario, Model model,
+            HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
         UsuarioData usuario = usuarioService.findById(idUsuario);
 
@@ -119,14 +120,15 @@ public class TareaController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("tareas", tareas);
         // Podemos reutilizar la vista listaTareas o crear una específica.
-        // Para empezar reutilizamos, pero pasamos un flag para ocultar botones de edición si quieres.
+        // Para empezar reutilizamos, pero pasamos un flag para ocultar botones de
+        // edición si quieres.
         model.addAttribute("esListadoCompletadas", true);
         return "listaTareas";
     }
 
     // Acción de completar tarea
     @PostMapping("/tareas/{id}/completar")
-    public String completarTarea(@PathVariable(value="id") Long idTarea, RedirectAttributes flash) {
+    public String completarTarea(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
@@ -145,8 +147,8 @@ public class TareaController {
     }
 
     @GetMapping("/tareas/{id}/editar")
-    public String formEditaTarea(@PathVariable(value="id") Long idTarea, @ModelAttribute TareaData tareaData,
-                                 Model model, HttpSession session) {
+    public String formEditaTarea(@PathVariable(value = "id") Long idTarea, @ModelAttribute TareaData tareaData,
+            Model model, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
@@ -162,10 +164,10 @@ public class TareaController {
     }
 
     @PostMapping("/tareas/{id}/editar")
-    public String grabaTareaModificada(@PathVariable(value="id") Long idTarea,
-                                       @ModelAttribute TareaData tareaData,
-                                       @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
-                                       Model model, RedirectAttributes flash, HttpSession session) {
+    public String grabaTareaModificada(@PathVariable(value = "id") Long idTarea,
+            @ModelAttribute TareaData tareaData,
+            @RequestParam(value = "etiquetaIds", required = false) List<Long> etiquetaIds,
+            Model model, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
@@ -187,9 +189,10 @@ public class TareaController {
     // Endpoint DELETE para compatibilidad con tests antiguos si existen
     @DeleteMapping("/tareas/{id}")
     @ResponseBody
-    public String borrarTarea(@PathVariable(value="id") Long idTarea, RedirectAttributes flash, HttpSession session) {
+    public String borrarTarea(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
-        if (tarea == null) throw new TareaNotFoundException();
+        if (tarea == null)
+            throw new TareaNotFoundException();
         comprobarUsuarioLogeado(tarea.getUsuarioId());
         tareaService.borraTarea(idTarea);
         return "";
@@ -197,7 +200,7 @@ public class TareaController {
 
     // Endpoint POST para la web (sin JS)
     @PostMapping("/tareas/{id}/borrar")
-    public String borrarTareaPost(@PathVariable(value="id") Long idTarea, RedirectAttributes flash) {
+    public String borrarTareaPost(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea != null) {
             comprobarUsuarioLogeado(tarea.getUsuarioId());
@@ -208,10 +211,40 @@ public class TareaController {
         return "redirect:/login";
     }
 
+    // Listar tareas borradas (Papelera)
+    @GetMapping("/usuarios/{id}/tareas/borradas")
+    public String listadoTareasBorradas(@PathVariable(value = "id") Long idUsuario, Model model, HttpSession session) {
+        comprobarUsuarioLogeado(idUsuario);
+        UsuarioData usuario = usuarioService.findById(idUsuario);
+
+        List<TareaData> tareas = tareaService.allTareasBorradasUsuario(idUsuario);
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("tareas", tareas);
+        // Usaremos una nueva plantilla 'tareasBorradas'
+        return "tareasBorradas";
+    }
+
+    // Acción de restaurar tarea
+    @PostMapping("/tareas/{id}/restaurar")
+    public String restaurarTarea(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash) {
+        TareaData tarea = tareaService.findById(idTarea);
+        if (tarea == null) {
+            throw new TareaNotFoundException();
+        }
+        comprobarUsuarioLogeado(tarea.getUsuarioId());
+
+        tareaService.restaurarTarea(idTarea);
+        flash.addFlashAttribute("mensaje", "Tarea restaurada correctamente");
+
+        return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas/borradas";
+    }
+
     @PostMapping("/tareas/guardarOrden")
     public String guardarOrdenGlobal(HttpServletRequest request, RedirectAttributes flash) {
         Long usuarioId = managerUserSession.usuarioLogeado();
-        if (usuarioId == null) return "redirect:/login";
+        if (usuarioId == null)
+            return "redirect:/login";
 
         Map<String, List<Long>> mapaOrden = new HashMap<>();
         Map<String, String[]> parameterMap = request.getParameterMap();
@@ -220,7 +253,11 @@ public class TareaController {
             if (key.startsWith("orden_")) {
                 List<Long> ids = Arrays.stream(parameterMap.get(key))
                         .map(s -> {
-                            try { return Long.parseLong(s); } catch (NumberFormatException e) { return null; }
+                            try {
+                                return Long.parseLong(s);
+                            } catch (NumberFormatException e) {
+                                return null;
+                            }
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
@@ -233,9 +270,9 @@ public class TareaController {
     }
 
     @PostMapping("/tareas/{id}/subtareas/nueva")
-    public String crearSubtarea(@PathVariable(value="id") Long idTareaPadre,
-                                @RequestParam("titulo") String titulo,
-                                RedirectAttributes flash) {
+    public String crearSubtarea(@PathVariable(value = "id") Long idTareaPadre,
+            @RequestParam("titulo") String titulo,
+            RedirectAttributes flash) {
         TareaData padre = tareaService.findById(idTareaPadre);
         if (padre != null) {
             comprobarUsuarioLogeado(padre.getUsuarioId());
@@ -264,8 +301,8 @@ public class TareaController {
 
     @PostMapping("/usuarios/{id}/etiquetas")
     public String guardarEtiquetas(@PathVariable(value = "id") Long idUsuario,
-                                   @ModelAttribute EtiquetaData data,
-                                   RedirectAttributes flash) {
+            @ModelAttribute EtiquetaData data,
+            RedirectAttributes flash) {
         comprobarUsuarioLogeado(idUsuario);
 
         etiquetaService.guardarEtiquetas(idUsuario, data.getEtiquetas());

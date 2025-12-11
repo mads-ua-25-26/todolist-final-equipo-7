@@ -122,10 +122,13 @@ public class TareaServiceTest {
         tareaService.borraTarea(tareaId);
 
         // THEN
-        assertThat(tareaService.findById(tareaId)).isNull();
-
+        // La tarea ya no debe salir en el listado principal
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
         assertThat(tareas).hasSize(1);
+        assertThat(tareas.stream().anyMatch(t -> t.getId().equals(tareaId))).isFalse();
+
+        // Pero sí en el de borradas
+        assertThat(tareaService.allTareasBorradasUsuario(usuarioId)).hasSize(1);
     }
 
     @Test
@@ -258,6 +261,7 @@ public class TareaServiceTest {
     public void testBorrarTareaPadreEliminaSubtareas() {
         // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
 
         TareaData subtarea1 = tareaService.nuevaSubtarea(tareaId, "Subtarea 1");
@@ -269,9 +273,20 @@ public class TareaServiceTest {
         tareaService.borraTarea(tareaId);
 
         // THEN
-        assertThat(tareaService.findById(tareaId)).isNull();
-        assertThat(tareaService.findById(subtarea1Id)).isNull();
-        assertThat(tareaService.findById(subtarea2Id)).isNull();
+        // Verificamos que la tarea padre y sus subtareas ya no salen en el listado del
+        // usuario
+        // Nota: allTareasUsuario devuelve tareas raíz. Si el padre no está, las hijas
+        // tampoco (jerárquicamente).
+        List<TareaData> tareasRaiz = tareaService.allTareasUsuario(usuarioId);
+        assertThat(tareasRaiz.stream().anyMatch(t -> t.getId().equals(tareaId))).isFalse();
+
+        // Para verificar subtareas, podríamos intentar buscarlas específicamente o ver
+        // si están en la papelera
+        // Al borrar el padre, el padre va a la papelera. Las subtareas también deberían
+        // estar ocultas.
+        // Verificamos que el padre está en la papelera
+        List<TareaData> borradas = tareaService.allTareasBorradasUsuario(usuarioId);
+        assertThat(borradas.stream().anyMatch(t -> t.getId().equals(tareaId))).isTrue();
     }
 
     @Test
@@ -422,5 +437,43 @@ public class TareaServiceTest {
         // Verificamos que NO se ha marcado como completada
         TareaData tarea = tareaService.findById(tareaId);
         assertThat(tarea.getCompletada()).isFalse();
+    }
+
+    @Test
+    public void testListarTareasBorradas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        // Borramos (soft delete)
+        tareaService.borraTarea(tareaId);
+
+        // WHEN
+        List<TareaData> tareasBorradas = tareaService.allTareasBorradasUsuario(usuarioId);
+
+        // THEN
+        assertThat(tareasBorradas).hasSize(1);
+        assertThat(tareasBorradas.get(0).getId()).isEqualTo(tareaId);
+    }
+
+    @Test
+    public void testRestaurarTarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        tareaService.borraTarea(tareaId);
+        // Comprobamos que no sale en lista principal
+        assertThat(tareaService.allTareasUsuario(usuarioId)).hasSize(1);
+
+        // WHEN
+        tareaService.restaurarTarea(tareaId);
+
+        // THEN
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+        assertThat(tareas).hasSize(2); // Vuelve a estar
+        assertThat(tareas.stream().anyMatch(t -> t.getId().equals(tareaId))).isTrue();
     }
 }

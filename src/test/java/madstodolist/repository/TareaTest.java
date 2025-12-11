@@ -384,4 +384,50 @@ public class TareaTest {
         // THEN
         assertThat(tarea.getCompletada()).isTrue();
     }
+
+    @Test
+    @Transactional
+    public void buscarTareasBorradas() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tarea1 = new Tarea(usuario, "Tarea visible");
+        Tarea tarea2 = new Tarea(usuario, "Tarea borrada");
+        tarea2.setVisible(false);
+
+        tareaRepository.save(tarea1);
+        tareaRepository.save(tarea2);
+
+        // WHEN
+        List<Tarea> tareasBorradas = tareaRepository.findTareasBorradasByUsuarioId(usuario.getId());
+
+        // THEN
+        assertThat(tareasBorradas).hasSize(1);
+        assertThat(tareasBorradas).contains(tarea2);
+        assertThat(tareasBorradas).doesNotContain(tarea1);
+    }
+
+    @Test
+    @Transactional
+    public void buscarTareasRaizNoDevuelveBorradas() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tarea1 = new Tarea(usuario, "Tarea visible");
+        Tarea tarea2 = new Tarea(usuario, "Tarea borrada");
+        tarea2.setVisible(false);
+
+        tareaRepository.save(tarea1);
+        tareaRepository.save(tarea2);
+
+        // WHEN
+        List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(usuario.getId());
+
+        // THEN
+        assertThat(tareasRaiz).hasSize(1);
+        assertThat(tareasRaiz).contains(tarea1);
+        assertThat(tareasRaiz).doesNotContain(tarea2);
+    }
 }
