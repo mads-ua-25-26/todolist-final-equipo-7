@@ -29,7 +29,7 @@
                     </thead>
                     <tbody id="sortable-tareas">
                         <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item"
-                            th:classappend="${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(today)} ? 'text-danger' : (${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(tomorrow)} ? 'text-warning' : '')">
+                            th:classappend="${tarea.fechaFinalizacion != null and !tarea.fechaFinalizacion.isAfter(today)} ? 'tarea-vencida' : (${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(tomorrow)} ? 'tarea-proxima' : '')">
                             <td class="drag-handle" style="cursor: move; text-align: center;">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
                                     style="color: #999;">
@@ -109,6 +109,20 @@
 
         .drag-handle:active {
             cursor: grabbing;
+        }
+
+        .tarea-vencida {
+            outline: 2px solid #dc3545;
+            /* Red */
+            z-index: 1;
+            position: relative;
+        }
+
+        .tarea-proxima {
+            outline: 2px solid #fd7e14;
+            /* Orange */
+            z-index: 1;
+            position: relative;
         }
     </style>
 
