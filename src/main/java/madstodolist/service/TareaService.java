@@ -101,6 +101,30 @@ public class TareaService {
                 .collect(Collectors.toList());
     }
 
+    // Listar tareas raíz de un usuario filtrando por estado (completadas o pendientes)
+    @Transactional(readOnly = true)
+    public List<TareaData> tareasUsuarioPorEstado(Long idUsuario, Boolean completada) {
+        // Usamos la nueva consulta del repositorio
+        List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioIdAndCompletada(idUsuario, completada);
+
+        // Inicializar posiciones si fuera necesario (solo para las pendientes tiene sentido ordenar, pero lo dejamos genérico)
+        if (!completada) {
+            inicializarPosicionesSiNecesario(tareasRaiz);
+        }
+
+        // Ordenar: Las pendientes por posición, las completadas por ID (o fecha si quisieras)
+        tareasRaiz.sort((t1, t2) -> {
+            if (!completada && t1.getPosition() != null && t2.getPosition() != null) {
+                return t1.getPosition().compareTo(t2.getPosition());
+            }
+            return t1.getId().compareTo(t2.getId());
+        });
+
+        return tareasRaiz.stream()
+                .map(this::convertirATareaData)
+                .collect(Collectors.toList());
+    }
+
     // Obtener las subtareas de una tarea específica
     @Transactional(readOnly = true)
     public List<TareaData> obtenerSubtareas(Long idTarea) {

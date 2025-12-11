@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import madstodolist.model.Etiqueta;
 import madstodolist.service.EtiquetaService;
 import madstodolist.dto.EtiquetaData;
+import madstodolist.service.TareaServiceException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -96,12 +97,51 @@ public class TareaController {
     public String listadoTareas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
         UsuarioData usuario = usuarioService.findById(idUsuario);
-        List<TareaData> tareas = tareaService.allTareasUsuario(idUsuario);
+
+        List<TareaData> tareas = tareaService.tareasUsuarioPorEstado(idUsuario, false);
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("tareas", tareas);
         model.addAttribute("today", java.time.LocalDate.now());
         model.addAttribute("tomorrow", java.time.LocalDate.now().plusDays(1));
         return "listaTareas";
+    }
+
+    // Listado de tareas completadas
+    @GetMapping("/usuarios/{id}/tareas/completadas")
+    public String listadoTareasCompletadas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
+        comprobarUsuarioLogeado(idUsuario);
+        UsuarioData usuario = usuarioService.findById(idUsuario);
+
+        // Pedimos solo las completadas
+        List<TareaData> tareas = tareaService.tareasUsuarioPorEstado(idUsuario, true);
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("tareas", tareas);
+        // Podemos reutilizar la vista listaTareas o crear una específica.
+        // Para empezar reutilizamos, pero pasamos un flag para ocultar botones de edición si quieres.
+        model.addAttribute("esListadoCompletadas", true);
+        return "listaTareas";
+    }
+
+    // Acción de completar tarea
+    @PostMapping("/tareas/{id}/completar")
+    public String completarTarea(@PathVariable(value="id") Long idTarea, RedirectAttributes flash) {
+        TareaData tarea = tareaService.findById(idTarea);
+        if (tarea == null) {
+            throw new TareaNotFoundException();
+        }
+        comprobarUsuarioLogeado(tarea.getUsuarioId());
+
+        try {
+            tareaService.completarTarea(idTarea);
+            flash.addFlashAttribute("mensaje", "Tarea completada correctamente");
+        } catch (TareaServiceException e) {
+            // Si falla (ej: tiene subtareas pendientes), mostramos el error
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
     }
 
     @GetMapping("/tareas/{id}/editar")
