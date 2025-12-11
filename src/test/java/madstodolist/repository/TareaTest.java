@@ -28,9 +28,6 @@ public class TareaTest {
     @Autowired
     EtiquetaRepository etiquetaRepository;
 
-    //
-    // Tests modelo Tarea en memoria, sin la conexión con la BD
-    //
     // Tests modelo Tarea en memoria
 
     @Test
@@ -268,7 +265,6 @@ public class TareaTest {
     @Test
     @Transactional
     public void añadirEtiquetaAUnaTarea() {
-    public void eliminarTareaPadreEliminaSubtareas() {
         // GIVEN
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
@@ -276,7 +272,6 @@ public class TareaTest {
         Tarea tarea = new Tarea(usuario, "Comprar leche");
         tareaRepository.save(tarea);
 
-        // CORRECCIÓN: Pasamos el usuario al constructor
         Etiqueta etiqueta = new Etiqueta(usuario, "Compras", "green");
         etiquetaRepository.save(etiqueta);
 
@@ -289,7 +284,14 @@ public class TareaTest {
         assertThat(tareaBD.getEtiquetas()).hasSize(1);
         assertThat(tareaBD.getEtiquetas()).contains(etiqueta);
     }
-}
+
+    @Test
+    @Transactional
+    public void eliminarTareaPadreEliminaSubtareas() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
         Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
         tareaRepository.save(tareaPadre);
         Long tareaPadreId = tareaPadre.getId();

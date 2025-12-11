@@ -32,23 +32,20 @@ public class TareaService {
 
     @Autowired
     private ModelMapper modelMapper;
+
     @Autowired
     EtiquetaRepository etiquetaRepository;
 
     // Crear una nueva tarea raíz para un usuario
     @Transactional
     public TareaData nuevaTareaUsuario(Long idUsuario, String tituloTarea, String descripcionTarea,
-            java.time.LocalDate fechaFinalizacion) {
+                                       java.time.LocalDate fechaFinalizacion) {
         logger.debug("Añadiendo tarea " + tituloTarea + " al usuario " + idUsuario);
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         if (usuario == null) {
             throw new TareaServiceException("Usuario " + idUsuario + " no existe al crear tarea " + tituloTarea);
         }
 
-        // Obtener la última posición para asignar a la nueva tarea
-        List<Tarea> tareasExistentes = tareaRepository.findByUsuarioId(idUsuario);
-        int nuevaPosicion = tareasExistentes.isEmpty() ? 1
-                : tareasExistentes.stream()
         // Obtener la última posición para asignar a la nueva tarea (solo tareas raíz)
         List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(idUsuario);
         int nuevaPosicion = tareasRaiz.isEmpty() ? 1 :
@@ -120,17 +117,13 @@ public class TareaService {
     public TareaData findById(Long tareaId) {
         logger.debug("Buscando tarea " + tareaId);
         Tarea tarea = tareaRepository.findById(tareaId).orElse(null);
-        if (tarea == null)
-            return null;
-        else
-            return modelMapper.map(tarea, TareaData.class);
         if (tarea == null) return null;
         return convertirATareaData(tarea);
     }
 
     @Transactional
     public TareaData modificaTarea(Long idTarea, String nuevoTitulo, String nuevaDescripcion,
-            java.time.LocalDate fechaFinalizacion) {
+                                   java.time.LocalDate fechaFinalizacion) {
         logger.debug("Modificando tarea " + idTarea + " - " + nuevoTitulo);
         Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
         if (tarea == null) {
@@ -237,6 +230,9 @@ public class TareaService {
             }
             // 3. Guardamos
             tareaRepository.save(tarea);
+        }
+    }
+
     // Método auxiliar para convertir Tarea a TareaData (incluyendo subtareas)
     private TareaData convertirATareaData(Tarea tarea) {
         TareaData tareaData = new TareaData();
@@ -246,6 +242,8 @@ public class TareaService {
         tareaData.setUsuarioId(tarea.getUsuario().getId());
         tareaData.setPosition(tarea.getPosition());
         tareaData.setTareaPadreId(tarea.getTareaPadre() != null ? tarea.getTareaPadre().getId() : null);
+        tareaData.setFechaFinalizacion(tarea.getFechaFinalizacion());
+        tareaData.setEtiquetas(tarea.getEtiquetas());
 
         // Convertir subtareas recursivamente
         if (tarea.getSubtareas() != null && !tarea.getSubtareas().isEmpty()) {
@@ -260,8 +258,6 @@ public class TareaService {
 
         return tareaData;
     }
-
-    // Añadir este método a TareaService.java
 
     @Transactional
     public void actualizarOrdenDesdeMap(Long usuarioId, Map<String, List<Long>> mapaOrden) {
@@ -287,7 +283,6 @@ public class TareaService {
         }
     }
 
-    // Método auxiliar (asegúrate de tenerlo o adáptalo del paso anterior)
     @Transactional
     public void actualizarOrdenSubtareas(Long idTareaPadre, List<Long> ordenSubtareas) {
         // Verificar que la tarea padre existe

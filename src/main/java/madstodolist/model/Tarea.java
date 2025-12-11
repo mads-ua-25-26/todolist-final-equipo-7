@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -37,13 +36,13 @@ public class Tarea implements Serializable {
 
     // Relación muchos a muchos con Etiquetas
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "tarea_etiquetas", joinColumns = @JoinColumn(name = "tarea_id"), inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
+    @JoinTable(
+            name = "tarea_etiquetas",
+            joinColumns = @JoinColumn(name = "tarea_id"),
+            inverseJoinColumns = @JoinColumn(name = "etiqueta_id")
+    )
     private Set<Etiqueta> etiquetas = new HashSet<>();
 
-    // Constructor vacío necesario para JPA/Hibernate.
-    // No debe usarse desde la aplicación.
-    public Tarea() {
-    }
     // Relación recursiva: una tarea puede tener subtareas
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tarea_padre_id")
@@ -112,8 +111,20 @@ public class Tarea implements Serializable {
         this.position = position;
     }
 
+    public LocalDate getFechaFinalizacion() {
+        return fechaFinalizacion;
+    }
+
+    public void setFechaFinalizacion(LocalDate fechaFinalizacion) {
+        this.fechaFinalizacion = fechaFinalizacion;
+    }
+
     public Usuario getUsuario() {
         return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     // Getters y setters de Etiquetas
@@ -123,19 +134,6 @@ public class Tarea implements Serializable {
 
     public void setEtiquetas(Set<Etiqueta> etiquetas) {
         this.etiquetas = etiquetas;
-    }
-
-    // Método para establecer la relación con el usuario
-
-    public void setUsuario(Usuario usuario) {
-        // Comprueba si el usuario ya está establecido
-        if (this.usuario != usuario) {
-            this.usuario = usuario;
-            // Añade la tarea a la lista de tareas del usuario
-            usuario.addTarea(this);
-        }
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 
     public Tarea getTareaPadre() {
@@ -172,6 +170,16 @@ public class Tarea implements Serializable {
         return tareaPadre == null;
     }
 
+    // Métodos que ayudan a la entidad Etiqueta
+    public void addEtiqueta(Etiqueta etiqueta) {
+        // Al ser un Set, si ya existe no la duplica
+        this.etiquetas.add(etiqueta);
+    }
+
+    public void removeEtiqueta(Etiqueta etiqueta) {
+        this.etiquetas.remove(etiqueta);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -189,34 +197,5 @@ public class Tarea implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(titulo, usuario);
-    }
-
-    public Integer getPosition() {
-        return position;
-    }
-
-    public void setPosition(Integer position) {
-        this.position = position;
-    }
-
-    public LocalDate getFechaFinalizacion() {
-        return fechaFinalizacion;
-    }
-
-    public void setFechaFinalizacion(LocalDate fechaFinalizacion) {
-        this.fechaFinalizacion = fechaFinalizacion;
-    }
-
-    // Métodos que ayudan a la entidad Etiqueta
-    public void addEtiqueta(Etiqueta etiqueta) {
-        // Al ser un Set, si ya existe no la duplica
-        this.etiquetas.add(etiqueta);
-    }
-
-    public void removeEtiqueta(Etiqueta etiqueta) {
-        this.etiquetas.remove(etiqueta);
-    }
-}
-        return Objects.hash(titulo);
     }
 }

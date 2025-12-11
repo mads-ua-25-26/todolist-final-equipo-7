@@ -33,8 +33,6 @@ public class TareaServiceTest {
     madstodolist.repository.TareaRepository tareaRepository;
 
     // Método para inicializar los datos de prueba en la BD
-    // Devuelve un mapa con los identificadores del usuario y de la primera tarea
-    // añadida
     Map<String, Long> addUsuarioTareasBD() {
         UsuarioData usuario = new UsuarioData();
         usuario.setEmail("user@ua");
@@ -42,11 +40,9 @@ public class TareaServiceTest {
 
         UsuarioData usuarioNuevo = usuarioService.registrar(usuario);
 
-        // Y añadimos dos tareas asociadas a ese usuario
+        // Añadimos dos tareas asociadas a ese usuario
         TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null, null);
         tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null, null);
-        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null);
-        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null);
 
         Map<String, Long> ids = new HashMap<>();
         ids.put("usuarioId", usuarioNuevo.getId());
@@ -60,9 +56,7 @@ public class TareaServiceTest {
         Long usuarioId = addUsuarioTareasBD().get("usuarioId");
 
         // WHEN
-        // creamos una nueva tarea asociada al usuario,
         TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null, null);
-        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null);
 
         // THEN
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
@@ -75,18 +69,20 @@ public class TareaServiceTest {
     @Test
     public void testNuevaTareaConFechaFinalizacion() {
         // GIVEN
-        // Un usuario en la BD
         Long usuarioId = addUsuarioTareasBD().get("usuarioId");
 
         // WHEN
-        // creamos una nueva tarea asociada al usuario con fecha de finalización
         java.time.LocalDate fecha = java.time.LocalDate.of(2023, 12, 31);
         TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Tarea con fecha", "Descripción", fecha);
 
         // THEN
-        // la tarea recuperada tiene la fecha correcta
         TareaData tareaRecuperada = tareaService.findById(nuevaTarea.getId());
         assertThat(tareaRecuperada.getFechaFinalizacion()).isEqualTo(fecha);
+    }
+
+    @Test
+    public void testFindById() {
+        // GIVEN
         Long tareaId = addUsuarioTareasBD().get("tareaId");
 
         // WHEN
@@ -97,7 +93,6 @@ public class TareaServiceTest {
         assertThat(lavarCoche.getTitulo()).isEqualTo("Lavar coche");
     }
 
-    // ... skipping unchanged parts ...
     @Test
     public void testModificarTarea() {
         // GIVEN
@@ -106,15 +101,7 @@ public class TareaServiceTest {
         Long tareaId = ids.get("tareaId");
 
         // WHEN
-        // modificamos la tarea correspondiente al identificador,
-
         tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null, null);
-
-        // THEN
-        // al buscar por el identificador en la base de datos se devuelve la tarea
-        // modificada
-
-        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null);
 
         // THEN
         TareaData tareaBD = tareaService.findById(tareaId);
@@ -124,7 +111,6 @@ public class TareaServiceTest {
         assertThat(tareas).contains(tareaBD);
     }
 
-    // ...
     @Test
     public void testBorrarTarea() {
         // GIVEN
@@ -143,7 +129,7 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void asignarEtiquetaATarea() {
+    public void testUsuarioContieneTarea() {
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
@@ -158,9 +144,7 @@ public class TareaServiceTest {
         Long usuarioId = ids.get("usuarioId");
 
         // WHEN
-        // Creamos una tercera tarea
         TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null, null);
-        TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null);
 
         // THEN
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
@@ -172,8 +156,6 @@ public class TareaServiceTest {
     @Test
     public void testActualizarOrden() {
         // GIVEN
-        // Un usuario con 2 tareas: "Lavar coche" (id1, pos 1) y "Renovar DNI" (id2, pos
-        // 2)
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
 
@@ -231,10 +213,10 @@ public class TareaServiceTest {
     }
 
     @Test
-    public void asignarEtiquetaATarea() {
+    public void testAsignarEtiquetaATarea() {
         // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
-        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
+        Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
 
         Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
@@ -250,6 +232,29 @@ public class TareaServiceTest {
 
     @Test
     public void testDevuelveEtiquetasEnTareaData() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
+        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
+
+        // WHEN
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+
+        TareaData tareaData = tareas.stream()
+                .filter(t -> t.getId().equals(tareaId))
+                .findFirst()
+                .orElse(null);
+
+        // THEN
+        assertThat(tareaData).isNotNull();
+        assertThat(tareaData.getEtiquetas()).hasSize(1);
+        assertThat(tareaData.getEtiquetas()).contains(etiqueta);
+    }
+
+    @Test
     public void testBorrarTareaPadreEliminaSubtareas() {
         // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
@@ -277,7 +282,7 @@ public class TareaServiceTest {
         TareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Subtarea original");
 
         // WHEN
-        tareaService.modificaTarea(subtarea.getId(), "Subtarea modificada", null);
+        tareaService.modificaTarea(subtarea.getId(), "Subtarea modificada", null, null);
 
         // THEN
         TareaData subtareaModificada = tareaService.findById(subtarea.getId());
@@ -291,58 +296,6 @@ public class TareaServiceTest {
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
 
-        Etiqueta etiqueta = etiquetaService.crearEtiqueta(usuarioId, "Urgente", "red");
-
-        tareaService.asignarEtiqueta(tareaId, etiqueta.getId());
-
-        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
-
-        TareaData tareaData = tareas.stream()
-                .filter(t -> t.getId().equals(tareaId))
-                .findFirst()
-                .orElse(null);
-
-        assertThat(tareaData).isNotNull();
-        assertThat(tareaData.getEtiquetas()).hasSize(1);
-        assertThat(tareaData.getEtiquetas()).contains(etiqueta);
-    }
-
-    @Test
-    public void testActualizarEtiquetas() {
-        // GIVEN
-        Map<String, Long> ids = addUsuarioTareasBD();
-        Long tareaId = ids.get("tareaId");
-        Long usuarioId = ids.get("usuarioId"); // Recuperamos ID usuario
-
-        Etiqueta e1 = etiquetaService.crearEtiqueta(usuarioId, "E1", "red");
-        Etiqueta e2 = etiquetaService.crearEtiqueta(usuarioId, "E2", "blue");
-        Etiqueta e3 = etiquetaService.crearEtiqueta(usuarioId, "E3", "green");
-
-        // WHEN: Asignamos E1 y E2
-        tareaService.actualizarEtiquetas(tareaId, List.of(e1.getId(), e2.getId()));
-
-        // THEN
-        Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
-        assertThat(tareaBD.getEtiquetas()).hasSize(2);
-        assertThat(tareaBD.getEtiquetas()).contains(e1, e2);
-
-        // WHEN: Cambiamos para tener E2 y E3
-        tareaService.actualizarEtiquetas(tareaId, List.of(e2.getId(), e3.getId()));
-
-        // THEN
-        tareaBD = tareaRepository.findById(tareaId).orElse(null);
-        assertThat(tareaBD.getEtiquetas()).hasSize(2);
-        assertThat(tareaBD.getEtiquetas()).contains(e2, e3);
-        assertThat(tareaBD.getEtiquetas()).doesNotContain(e1);
-
-        // WHEN: Pasamos lista vacía
-        tareaService.actualizarEtiquetas(tareaId, new ArrayList<>());
-
-        // THEN
-        tareaBD = tareaRepository.findById(tareaId).orElse(null);
-        assertThat(tareaBD.getEtiquetas()).isEmpty();
-    }
-}
         // Crear subtareas
         tareaService.nuevaSubtarea(tareaId, "Subtarea 1");
         tareaService.nuevaSubtarea(tareaId, "Subtarea 2");
@@ -383,5 +336,41 @@ public class TareaServiceTest {
         TareaData subtarea1Actualizada = tareaService.findById(subtarea1.getId());
         assertThat(subtarea1Actualizada.getSubtareas()).hasSize(1);
         assertThat(subtarea1Actualizada.getSubtareas().get(0).getId()).isEqualTo(subtarea2.getId());
+    }
+
+    @Test
+    public void testActualizarEtiquetas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        Long usuarioId = ids.get("usuarioId");
+
+        Etiqueta e1 = etiquetaService.crearEtiqueta(usuarioId, "E1", "red");
+        Etiqueta e2 = etiquetaService.crearEtiqueta(usuarioId, "E2", "blue");
+        Etiqueta e3 = etiquetaService.crearEtiqueta(usuarioId, "E3", "green");
+
+        // WHEN: Asignamos E1 y E2
+        tareaService.actualizarEtiquetas(tareaId, List.of(e1.getId(), e2.getId()));
+
+        // THEN
+        Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e1, e2);
+
+        // WHEN: Cambiamos para tener E2 y E3
+        tareaService.actualizarEtiquetas(tareaId, List.of(e2.getId(), e3.getId()));
+
+        // THEN
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).hasSize(2);
+        assertThat(tareaBD.getEtiquetas()).contains(e2, e3);
+        assertThat(tareaBD.getEtiquetas()).doesNotContain(e1);
+
+        // WHEN: Pasamos lista vacía
+        tareaService.actualizarEtiquetas(tareaId, new ArrayList<>());
+
+        // THEN
+        tareaBD = tareaRepository.findById(tareaId).orElse(null);
+        assertThat(tareaBD.getEtiquetas()).isEmpty();
     }
 }

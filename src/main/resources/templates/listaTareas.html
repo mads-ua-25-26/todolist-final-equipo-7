@@ -4,13 +4,6 @@
 <head th:replace="fragments :: head (titulo='Tareas')"></head>
 
 <body>
-    <div th:replace="~{navbar}"></div>
-    <div class="container-fluid">
-
-        <div class="row mt-3">
-            <div class="col">
-                <h2 th:text="'Listado de tareas de ' + ${usuario.nombre}"></h2>
-            </div>
 <div th:replace="~{navbar}"></div>
 
 <div class="container-fluid">
@@ -22,63 +15,8 @@
                 <i class="fas fa-save"></i> Guardar orden
             </button>
         </div>
+    </div>
 
-        <div class="row mt-3">
-            <div class="col">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;"></th>
-                            <th>Id</th>
-                            <th>Tarea</th>
-                            <th>Etiquetas</th>
-                            <th>Descripción</th>
-                            <th>Fecha de finalización</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sortable-tareas">
-                        <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item"
-                            th:classappend="${tarea.fechaFinalizacion != null and !tarea.fechaFinalizacion.isAfter(today)} ? 'tarea-vencida' : (${tarea.fechaFinalizacion != null and tarea.fechaFinalizacion.isEqual(tomorrow)} ? 'tarea-proxima' : '')">
-                            <td class="drag-handle" style="cursor: move; text-align: center;">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
-                                    style="color: #999;">
-                                    <circle cx="4" cy="3" r="1.5" />
-                                    <circle cx="12" cy="3" r="1.5" />
-                                    <circle cx="4" cy="8" r="1.5" />
-                                    <circle cx="12" cy="8" r="1.5" />
-                                    <circle cx="4" cy="13" r="1.5" />
-                                    <circle cx="12" cy="13" r="1.5" />
-                                </svg>
-                            </td>
-                            <td th:text="${tarea.id}"></td>
-                            <td th:text="${tarea.titulo}"></td>
-
-                            <td>
-                                <span th:each="etiqueta : ${tarea.etiquetas}" class="badge badge-pill"
-                                    th:text="${etiqueta.nombre}"
-                                    th:style="'background-color: ' + ${etiqueta.color} + '; color: white; display: block; margin-bottom: 4px; width: fit-content;'">
-                                </span>
-                            </td>
-
-                            <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
-                            <td th:text="${tarea.fechaFinalizacion}"></td>
-                            <td>
-                                <a class="btn btn-primary btn-xs"
-                                    th:href="@{/tareas/{id}/editar(id=${tarea.id})}">editar</a>
-                                <button class="btn btn-danger btn-xs" style="cursor: pointer;"
-                                    th:onclick="'del(\'/tareas/' + ${tarea.id} + '\')'">borrar</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>
-                    <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">Nueva
-                        tarea</a>
-                    <a class="btn btn-secondary ml-2" th:href="@{/usuarios/{id}/etiquetas(id=${usuario.id})}">Modificar
-                        etiquetas</a>
-                    <a class="btn btn-link" href="/logout">Salir</a>
-                </p>
     <form id="formReordenar" th:action="@{/tareas/guardarOrden}" method="post"></form>
 
     <div class="row mt-3">
@@ -89,126 +27,8 @@
                 </th:block>
             </div>
         </div>
-
-        <div class="row mt-2">
-            <div class="col">
-                <div class="alert alert-success alert-dismissible fade show" role="alert"
-                    th:if="${!#strings.isEmpty(mensaje)}">
-                    <span th:text="${mensaje}"></span>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <div th:replace="fragments::javascript" />
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
-    <style>
-        /* Evita que el texto se seleccione al arrastrar */
-        .sortable-item {
-            -webkit-user-select: none;
-            /* Safari */
-            -moz-user-select: none;
-            /* Firefox */
-            -ms-user-select: none;
-            /* IE10+/Edge */
-            user-select: none;
-            /* Standard */
-        }
-
-        /* Opcional: Cambia el cursor para indicar que se puede agarrar */
-        .drag-handle {
-            cursor: grab;
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .tarea-vencida {
-            outline: 2px solid #dc3545;
-            /* Red */
-            z-index: 1;
-            position: relative;
-        }
-
-        .tarea-proxima {
-            outline: 2px solid #fd7e14;
-            /* Orange */
-            z-index: 1;
-            position: relative;
-        }
-    </style>
-
-    <script type="text/javascript">
-        // Función para borrar tarea
-        function del(urlBorrar) {
-            if (confirm('¿Estás seguro/a de que quieres borrar la tarea?')) {
-                fetch(urlBorrar, {
-                    method: 'DELETE'
-                }).then((res) => location.reload());
-            }
-        }
-
-        // Inicializar SortableJS cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function () {
-            const tbody = document.getElementById('sortable-tareas');
-
-            if (tbody && tbody.querySelectorAll('tr[data-id]').length > 0) {
-                Sortable.create(tbody, {
-                    animation: 150,
-                    handle: '.drag-handle',
-                    ghostClass: 'sortable-ghost',
-                    dragClass: 'sortable-drag',
-                    chosenClass: 'sortable-chosen',
-                    forceFallback: true, // Mejor soporte para touch
-
-                    // Evento al soltar la tarea
-                    onEnd: function (evt) {
-                        // Verificar si realmente cambió de posición
-                        if (evt.oldIndex === evt.newIndex) {
-                            return;
-                        }
-
-                        // Obtener el nuevo orden de IDs
-                        const ordenTareas = Array.from(tbody.querySelectorAll('tr[data-id]'))
-                            .map(tr => parseInt(tr.getAttribute('data-id')));
-
-                        // Enviar al servidor
-                        guardarOrden(ordenTareas);
-                    }
-                });
-            }
-        });
-
-        // Función para guardar el nuevo orden en el servidor
-        function guardarOrden(ordenTareas) {
-            fetch('/tareas/reordenar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ orden: ordenTareas })
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error al guardar el orden');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Orden guardado correctamente');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al guardar el orden de las tareas. Por favor, recarga la página.');
-                });
-        }
-    </script>
     <div class="row mt-3 mb-5">
         <div class="col">
             <a class="btn btn-primary btn-lg shadow" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">
@@ -249,6 +69,17 @@
                   th:text="${taskItem?.titulo}"></span>
 
             <span class="badge badge-pill badge-light border ml-2" th:text="'ID: ' + ${taskItem?.id}"></span>
+
+            <!-- Etiquetas -->
+            <span th:each="etiqueta : ${taskItem?.etiquetas}" class="badge badge-pill ml-1"
+                  th:text="${etiqueta.nombre}"
+                  th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
+            </span>
+
+            <!-- Fecha de finalización -->
+            <span th:if="${taskItem?.fechaFinalizacion != null}" class="text-muted ml-2">
+                <small>Vence: <span th:text="${taskItem.fechaFinalizacion}"></span></small>
+            </span>
         </div>
 
         <div class="d-flex align-items-center">
@@ -321,5 +152,4 @@
 </script>
 
 </body>
-
 </html>
