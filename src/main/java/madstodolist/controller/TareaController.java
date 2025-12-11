@@ -1,16 +1,13 @@
 package madstodolist.controller;
 
 import madstodolist.authentication.ManagerUserSession;
-import madstodolist.controller.exception.UsuarioNoLogeadoException;
 import madstodolist.controller.exception.TareaNotFoundException;
+import madstodolist.controller.exception.UsuarioNoLogeadoException;
 import madstodolist.dto.TareaData;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.TareaService;
-import madstodolist.service.TareaServiceException;
 import madstodolist.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +16,10 @@ import madstodolist.model.Etiqueta;
 import madstodolist.service.EtiquetaService;
 import madstodolist.dto.EtiquetaData;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class TareaController {
@@ -65,8 +62,10 @@ public class TareaController {
             @ModelAttribute TareaData tareaData, Model model,
             HttpSession session) {
 
+    public String formNuevaTarea(@PathVariable(value="id") Long idUsuario,
+                                 @ModelAttribute TareaData tareaData, Model model,
+                                 HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
-
         UsuarioData usuario = usuarioService.findById(idUsuario);
         model.addAttribute("usuario", usuario);
 
@@ -92,6 +91,11 @@ public class TareaController {
             tareaService.actualizarEtiquetas(tarea.getId(), etiquetaIds);
         }
 
+    public String nuevaTarea(@PathVariable(value="id") Long idUsuario, @ModelAttribute TareaData tareaData,
+                             Model model, RedirectAttributes flash,
+                             HttpSession session) {
+        comprobarUsuarioLogeado(idUsuario);
+        tareaService.nuevaTareaUsuario(idUsuario, tareaData.getTitulo(), tareaData.getDescripcion());
         flash.addFlashAttribute("mensaje", "Tarea creada correctamente");
         return "redirect:/usuarios/" + idUsuario + "/tareas";
     }
@@ -99,8 +103,8 @@ public class TareaController {
     @GetMapping("/usuarios/{id}/tareas")
     public String listadoTareas(@PathVariable(value = "id") Long idUsuario, Model model, HttpSession session) {
 
+    public String listadoTareas(@PathVariable(value="id") Long idUsuario, Model model, HttpSession session) {
         comprobarUsuarioLogeado(idUsuario);
-
         UsuarioData usuario = usuarioService.findById(idUsuario);
         List<TareaData> tareas = tareaService.allTareasUsuario(idUsuario);
         model.addAttribute("usuario", usuario);
@@ -114,13 +118,13 @@ public class TareaController {
     public String formEditaTarea(@PathVariable(value = "id") Long idTarea, @ModelAttribute TareaData tareaData,
             Model model, HttpSession session) {
 
+    public String formEditaTarea(@PathVariable(value="id") Long idTarea, @ModelAttribute TareaData tareaData,
+                                 Model model, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
         if (tarea == null) {
             throw new TareaNotFoundException();
         }
-
         comprobarUsuarioLogeado(tarea.getUsuarioId());
-
         model.addAttribute("tarea", tarea);
         model.addAttribute("etiquetas", etiquetaService.findAllByUsuario(tarea.getUsuarioId()));
 
@@ -139,7 +143,6 @@ public class TareaController {
         if (tarea == null) {
             throw new TareaNotFoundException();
         }
-
         Long idUsuario = tarea.getUsuarioId();
         comprobarUsuarioLogeado(idUsuario);
 
@@ -154,19 +157,17 @@ public class TareaController {
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
     }
 
+    // Endpoint DELETE para compatibilidad con tests antiguos si existen
     @DeleteMapping("/tareas/{id}")
     @ResponseBody
     // La anotación @ResponseBody sirve para que la cadena devuelta sea la
     // resupuesta
     // de la petición HTTP, en lugar de una plantilla thymeleaf
     public String borrarTarea(@PathVariable(value = "id") Long idTarea, RedirectAttributes flash, HttpSession session) {
+    public String borrarTarea(@PathVariable(value="id") Long idTarea, RedirectAttributes flash, HttpSession session) {
         TareaData tarea = tareaService.findById(idTarea);
-        if (tarea == null) {
-            throw new TareaNotFoundException();
-        }
-
+        if (tarea == null) throw new TareaNotFoundException();
         comprobarUsuarioLogeado(tarea.getUsuarioId());
-
         tareaService.borraTarea(idTarea);
         return "";
     }
@@ -181,31 +182,55 @@ public class TareaController {
         if (idUsuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Usuario no autenticado"));
+    // Endpoint POST para la web (sin JS)
+    @PostMapping("/tareas/{id}/borrar")
+    public String borrarTareaPost(@PathVariable(value="id") Long idTarea, RedirectAttributes flash) {
+        TareaData tarea = tareaService.findById(idTarea);
+        if (tarea != null) {
+            comprobarUsuarioLogeado(tarea.getUsuarioId());
+            tareaService.borraTarea(idTarea);
+            flash.addFlashAttribute("mensaje", "Tarea borrada");
+            return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas";
         }
+        return "redirect:/login";
+    }
 
-        List<Long> orden = payload.get("orden");
+    @PostMapping("/tareas/guardarOrden")
+    public String guardarOrdenGlobal(HttpServletRequest request, RedirectAttributes flash) {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) return "redirect:/login";
 
-        if (orden == null || orden.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Orden inválido"));
+        Map<String, List<Long>> mapaOrden = new HashMap<>();
+        Map<String, String[]> parameterMap = request.getParameterMap();
+
+        for (String key : parameterMap.keySet()) {
+            if (key.startsWith("orden_")) {
+                List<Long> ids = Arrays.stream(parameterMap.get(key))
+                        .map(s -> {
+                            try { return Long.parseLong(s); } catch (NumberFormatException e) { return null; }
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                mapaOrden.put(key, ids);
+            }
         }
+        tareaService.actualizarOrdenDesdeMap(usuarioId, mapaOrden);
+        flash.addFlashAttribute("mensaje", "Orden actualizado correctamente");
+        return "redirect:/usuarios/" + usuarioId + "/tareas";
+    }
 
-        try {
-            tareaService.actualizarOrden(idUsuario, orden);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("mensaje", "Orden actualizado correctamente");
-
-            return ResponseEntity.ok(response);
-
-        } catch (TareaServiceException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar el orden"));
+    @PostMapping("/tareas/{id}/subtareas/nueva")
+    public String crearSubtarea(@PathVariable(value="id") Long idTareaPadre,
+                                @RequestParam("titulo") String titulo,
+                                RedirectAttributes flash) {
+        TareaData padre = tareaService.findById(idTareaPadre);
+        if (padre != null) {
+            comprobarUsuarioLogeado(padre.getUsuarioId());
+            tareaService.nuevaSubtarea(idTareaPadre, titulo);
+            flash.addFlashAttribute("mensaje", "Subtarea añadida");
+            return "redirect:/usuarios/" + padre.getUsuarioId() + "/tareas";
         }
+        return "redirect:/login";
     }
 
     @GetMapping("/usuarios/{id}/etiquetas")
@@ -235,4 +260,5 @@ public class TareaController {
         flash.addFlashAttribute("mensaje", "Etiquetas actualizadas correctamente");
         return "redirect:/usuarios/" + idUsuario + "/tareas";
     }
+}
 }

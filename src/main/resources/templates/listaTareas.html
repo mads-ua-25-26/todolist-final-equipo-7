@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head th:replace="fragments :: head (titulo='Tareas')"></head>
 
 <body>
     <div th:replace="~{navbar}"></div>
@@ -11,6 +11,16 @@
             <div class="col">
                 <h2 th:text="'Listado de tareas de ' + ${usuario.nombre}"></h2>
             </div>
+<div th:replace="~{navbar}"></div>
+
+<div class="container-fluid">
+
+    <div class="row mt-3">
+        <div class="col d-flex justify-content-between align-items-center">
+            <h2 th:text="'Listado de tareas de ' + ${usuario.nombre}"></h2>
+            <button type="submit" form="formReordenar" class="btn btn-warning shadow-sm">
+                <i class="fas fa-save"></i> Guardar orden
+            </button>
         </div>
 
         <div class="row mt-3">
@@ -69,6 +79,14 @@
                         etiquetas</a>
                     <a class="btn btn-link" href="/logout">Salir</a>
                 </p>
+    <form id="formReordenar" th:action="@{/tareas/guardarOrden}" method="post"></form>
+
+    <div class="row mt-3">
+        <div class="col">
+            <div id="lista-tareas-raiz" class="list-group list-group-flush pb-5">
+                <th:block th:each="tarea : ${tareas}">
+                    <div th:replace=":: tareaFragment(taskItem=${tarea}, pContext='root', level=0)"></div>
+                </th:block>
             </div>
         </div>
 
@@ -191,6 +209,116 @@
                 });
         }
     </script>
+    <div class="row mt-3 mb-5">
+        <div class="col">
+            <a class="btn btn-primary btn-lg shadow" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">
+                <span style="font-size: 1.2em;">+</span> Nueva tarea principal
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-2" th:if="${!#strings.isEmpty(mensaje)}">
+        <div class="col">
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <span th:text="${mensaje}"></span>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="tareaFragment(taskItem, pContext, level)"
+     th:if="${taskItem != null}"
+     class="list-group-item p-0 border-0 mb-2"
+     style="background: transparent;">
+
+    <input type="hidden" form="formReordenar" th:name="'orden_' + ${pContext}" th:value="${taskItem?.id}" />
+
+    <div class="d-flex align-items-center border rounded p-3"
+         th:classappend="${level == 0 ? 'bg-white shadow-sm' : 'bg-light text-secondary'}"
+         th:style="|border-left: 4px solid #6c757d !important; margin-left: ${level * 20}px;|">
+
+        <div class="mr-3 drag-handle" style="cursor: move; opacity: 0.5;">
+            <span style="font-size: 1.5em;">☰</span>
+        </div>
+
+        <div class="flex-grow-1">
+            <span th:if="${level > 0}" class="text-muted mr-1" style="font-family: monospace; font-size: 1.2em;">└─</span>
+
+            <span th:class="${level == 0 ? 'h5 font-weight-bold' : 'font-weight-normal'}"
+                  th:text="${taskItem?.titulo}"></span>
+
+            <span class="badge badge-pill badge-light border ml-2" th:text="'ID: ' + ${taskItem?.id}"></span>
+        </div>
+
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-sm btn-outline-success mr-2"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'block\''"
+                    title="Añadir subtarea">
+                <span style="font-weight: bold;">+ Sub</span>
+            </button>
+
+            <a class="btn btn-sm btn-outline-primary mr-2" th:href="@{/tareas/{id}/editar(id=${taskItem?.id})}">
+                Editar
+            </a>
+
+            <form th:action="@{/tareas/{id}/borrar(id=${taskItem?.id})}" method="post"
+                  onsubmit="return confirm('¿Borrar esta tarea?');" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded bg-white shadow-sm"
+         th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #28a745 !important;|">
+
+        <form th:action="@{/tareas/{id}/subtareas/nueva(id=${taskItem?.id})}" method="post" class="form-inline">
+            <span class="mr-2 text-success font-weight-bold">↳ Nueva subtarea:</span>
+
+            <input type="text" name="titulo" class="form-control form-control-sm mr-2 flex-grow-1"
+                   placeholder="Título..." required>
+
+            <button type="submit" class="btn btn-sm btn-success">Guardar</button>
+            <button type="button" class="btn btn-sm btn-secondary ml-1"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'none\''">Cancelar</button>
+        </form>
+    </div>
+
+    <div class="lista-subtareas mt-1"
+         th:if="${taskItem?.subtareas != null and not #lists.isEmpty(taskItem.subtareas)}"
+         th:data-group-name="'group-' + ${taskItem.id}">
+
+        <th:block th:each="sub : ${taskItem.subtareas}">
+            <div th:replace=":: tareaFragment(taskItem=${sub}, pContext=${taskItem.id}, level=${level + 1})"></div>
+        </th:block>
+    </div>
+</div>
+
+<div th:replace="fragments::javascript"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const config = {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'bg-info',
+            fallbackOnBody: true,
+            swapThreshold: 0.65
+        };
+
+        const rootList = document.getElementById('lista-tareas-raiz');
+        if (rootList) {
+            Sortable.create(rootList, { ...config, group: { name: 'root', pull: false, put: false } });
+        }
+
+        const sublists = document.querySelectorAll('.lista-subtareas');
+        sublists.forEach(list => {
+            const groupName = list.getAttribute('data-group-name');
+            Sortable.create(list, { ...config, group: { name: groupName, pull: false, put: false } });
+        });
+    });
+</script>
 
 </body>
 

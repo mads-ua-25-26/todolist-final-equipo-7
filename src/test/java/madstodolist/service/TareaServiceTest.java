@@ -16,11 +16,6 @@ import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Hemos eliminado todos los @Transactional de los tests
-// y usado un script para limpiar la BD de test después de
-// cada test
-// https://dev.to/henrykeys/don-t-use-transactional-in-tests-40eb
-
 @SpringBootTest
 @Sql(scripts = "/clean-db.sql")
 public class TareaServiceTest {
@@ -45,14 +40,14 @@ public class TareaServiceTest {
         usuario.setEmail("user@ua");
         usuario.setPassword("123");
 
-        // Añadimos un usuario a la base de datos
         UsuarioData usuarioNuevo = usuarioService.registrar(usuario);
 
         // Y añadimos dos tareas asociadas a ese usuario
         TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null, null);
         tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null, null);
+        TareaData tarea1 = tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Lavar coche", null);
+        tareaService.nuevaTareaUsuario(usuarioNuevo.getId(), "Renovar DNI", null);
 
-        // Devolvemos los ids del usuario y de la primera tarea añadida
         Map<String, Long> ids = new HashMap<>();
         ids.put("usuarioId", usuarioNuevo.getId());
         ids.put("tareaId", tarea1.getId());
@@ -62,22 +57,19 @@ public class TareaServiceTest {
     @Test
     public void testNuevaTareaUsuario() {
         // GIVEN
-        // Un usuario en la BD
-
         Long usuarioId = addUsuarioTareasBD().get("usuarioId");
 
         // WHEN
         // creamos una nueva tarea asociada al usuario,
         TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null, null);
+        TareaData nuevaTarea = tareaService.nuevaTareaUsuario(usuarioId, "Práctica 1 de MADS", null);
 
         // THEN
-        // al recuperar la lista de tareas del usuario, la nueva tarea
-        // está en la lista de tareas del usuario.
-
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
 
         assertThat(tareas).hasSize(3);
         assertThat(tareas).contains(nuevaTarea);
+        assertThat(nuevaTarea.esRaiz()).isTrue();
     }
 
     @Test
@@ -95,14 +87,20 @@ public class TareaServiceTest {
         // la tarea recuperada tiene la fecha correcta
         TareaData tareaRecuperada = tareaService.findById(nuevaTarea.getId());
         assertThat(tareaRecuperada.getFechaFinalizacion()).isEqualTo(fecha);
+        Long tareaId = addUsuarioTareasBD().get("tareaId");
+
+        // WHEN
+        TareaData lavarCoche = tareaService.findById(tareaId);
+
+        // THEN
+        assertThat(lavarCoche).isNotNull();
+        assertThat(lavarCoche.getTitulo()).isEqualTo("Lavar coche");
     }
 
     // ... skipping unchanged parts ...
     @Test
     public void testModificarTarea() {
         // GIVEN
-        // Un usuario y una tarea en la BD
-
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
@@ -116,32 +114,58 @@ public class TareaServiceTest {
         // al buscar por el identificador en la base de datos se devuelve la tarea
         // modificada
 
+        tareaService.modificaTarea(tareaId, "Limpiar los cristales del coche", null);
+
+        // THEN
         TareaData tareaBD = tareaService.findById(tareaId);
         assertThat(tareaBD.getTitulo()).isEqualTo("Limpiar los cristales del coche");
 
-        // y el usuario tiene también esa tarea modificada.
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
         assertThat(tareas).contains(tareaBD);
     }
 
     // ...
     @Test
+    public void testBorrarTarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        // WHEN
+        tareaService.borraTarea(tareaId);
+
+        // THEN
+        assertThat(tareaService.findById(tareaId)).isNull();
+
+        List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
+        assertThat(tareas).hasSize(1);
+    }
+
+    @Test
+    public void asignarEtiquetaATarea() {
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        assertThat(tareaService.usuarioContieneTarea(usuarioId, tareaId)).isTrue();
+    }
+
+    @Test
     public void testNuevaTareaSeAñadeAlFinal() {
         // GIVEN
-        // Un usuario con 2 tareas creadas por el método auxiliar (posiciones 1 y 2)
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
 
         // WHEN
         // Creamos una tercera tarea
         TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null, null);
+        TareaData tarea3 = tareaService.nuevaTareaUsuario(usuarioId, "Tercera tarea", null);
 
         // THEN
-        // Al recuperar las tareas, la nueva está en la última posición (índice 2)
         List<TareaData> tareas = tareaService.allTareasUsuario(usuarioId);
 
         assertThat(tareas).hasSize(3);
-        // Verificamos que la última de la lista es la que acabamos de crear
         assertThat(tareas.get(2).getId()).isEqualTo(tarea3.getId());
     }
 
@@ -154,20 +178,56 @@ public class TareaServiceTest {
         Long usuarioId = ids.get("usuarioId");
 
         List<TareaData> tareasIniciales = tareaService.allTareasUsuario(usuarioId);
-        Long idTarea1 = tareasIniciales.get(0).getId(); // Lavar coche
-        Long idTarea2 = tareasIniciales.get(1).getId(); // Renovar DNI
+        Long idTarea1 = tareasIniciales.get(0).getId();
+        Long idTarea2 = tareasIniciales.get(1).getId();
 
         // WHEN
-        // Cambiamos el orden para que la segunda pase a ser la primera
-        // Enviamos una lista con [idTarea2, idTarea1]
         tareaService.actualizarOrden(usuarioId, java.util.Arrays.asList(idTarea2, idTarea1));
 
         // THEN
-        // Al recuperar las tareas, el orden ha cambiado
         List<TareaData> tareasReordenadas = tareaService.allTareasUsuario(usuarioId);
 
-        assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2); // Renovar DNI ahora es primera
-        assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1); // Lavar coche ahora es segunda
+        assertThat(tareasReordenadas.get(0).getId()).isEqualTo(idTarea2);
+        assertThat(tareasReordenadas.get(1).getId()).isEqualTo(idTarea1);
+    }
+
+    @Test
+    public void testCrearSubtarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        // WHEN
+        TareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Comprar jabón");
+
+        // THEN
+        assertThat(subtarea).isNotNull();
+        assertThat(subtarea.getTitulo()).isEqualTo("Comprar jabón");
+        assertThat(subtarea.esRaiz()).isFalse();
+        assertThat(subtarea.getTareaPadreId()).isEqualTo(tareaId);
+
+        // Verificar que la tarea padre contiene la subtarea
+        TareaData tareaPadre = tareaService.findById(tareaId);
+        assertThat(tareaPadre.getSubtareas()).hasSize(1);
+        assertThat(tareaPadre.getSubtareas().get(0).getId()).isEqualTo(subtarea.getId());
+    }
+
+    @Test
+    public void testObtenerSubtareas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        TareaData subtarea1 = tareaService.nuevaSubtarea(tareaId, "Subtarea 1");
+        TareaData subtarea2 = tareaService.nuevaSubtarea(tareaId, "Subtarea 2");
+
+        // WHEN
+        List<TareaData> subtareas = tareaService.obtenerSubtareas(tareaId);
+
+        // THEN
+        assertThat(subtareas).hasSize(2);
+        assertThat(subtareas).extracting(TareaData::getId)
+                .containsExactly(subtarea1.getId(), subtarea2.getId());
     }
 
     @Test
@@ -190,6 +250,43 @@ public class TareaServiceTest {
 
     @Test
     public void testDevuelveEtiquetasEnTareaData() {
+    public void testBorrarTareaPadreEliminaSubtareas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        TareaData subtarea1 = tareaService.nuevaSubtarea(tareaId, "Subtarea 1");
+        TareaData subtarea2 = tareaService.nuevaSubtarea(tareaId, "Subtarea 2");
+        Long subtarea1Id = subtarea1.getId();
+        Long subtarea2Id = subtarea2.getId();
+
+        // WHEN
+        tareaService.borraTarea(tareaId);
+
+        // THEN
+        assertThat(tareaService.findById(tareaId)).isNull();
+        assertThat(tareaService.findById(subtarea1Id)).isNull();
+        assertThat(tareaService.findById(subtarea2Id)).isNull();
+    }
+
+    @Test
+    public void testModificarSubtarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        TareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Subtarea original");
+
+        // WHEN
+        tareaService.modificaTarea(subtarea.getId(), "Subtarea modificada", null);
+
+        // THEN
+        TareaData subtareaModificada = tareaService.findById(subtarea.getId());
+        assertThat(subtareaModificada.getTitulo()).isEqualTo("Subtarea modificada");
+    }
+
+    @Test
+    public void testSubtareasNoAparecenEnListadoPrincipal() {
+        // GIVEN
         Map<String, Long> ids = addUsuarioTareasBD();
         Long usuarioId = ids.get("usuarioId");
         Long tareaId = ids.get("tareaId");
@@ -244,5 +341,47 @@ public class TareaServiceTest {
         // THEN
         tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD.getEtiquetas()).isEmpty();
+    }
+}
+        // Crear subtareas
+        tareaService.nuevaSubtarea(tareaId, "Subtarea 1");
+        tareaService.nuevaSubtarea(tareaId, "Subtarea 2");
+
+        // WHEN
+        List<TareaData> tareasRaiz = tareaService.allTareasUsuario(usuarioId);
+
+        // THEN
+        // Solo deben aparecer las 2 tareas raíz, no las subtareas
+        assertThat(tareasRaiz).hasSize(2);
+        assertThat(tareasRaiz).allMatch(TareaData::esRaiz);
+
+        // Pero la tarea padre debe tener sus subtareas
+        TareaData tareaPadre = tareasRaiz.stream()
+                .filter(t -> t.getId().equals(tareaId))
+                .findFirst()
+                .orElse(null);
+        assertThat(tareaPadre).isNotNull();
+        assertThat(tareaPadre.getSubtareas()).hasSize(2);
+    }
+
+    @Test
+    public void testSubtareaDeSubtarea() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        // Crear una subtarea
+        TareaData subtarea1 = tareaService.nuevaSubtarea(tareaId, "Subtarea nivel 1");
+
+        // WHEN - Crear una subtarea de la subtarea (subtarea de nivel 2)
+        TareaData subtarea2 = tareaService.nuevaSubtarea(subtarea1.getId(), "Subtarea nivel 2");
+
+        // THEN
+        assertThat(subtarea2.getTareaPadreId()).isEqualTo(subtarea1.getId());
+
+        // Verificar la jerarquía
+        TareaData subtarea1Actualizada = tareaService.findById(subtarea1.getId());
+        assertThat(subtarea1Actualizada.getSubtareas()).hasSize(1);
+        assertThat(subtarea1Actualizada.getSubtareas().get(0).getId()).isEqualTo(subtarea2.getId());
     }
 }
