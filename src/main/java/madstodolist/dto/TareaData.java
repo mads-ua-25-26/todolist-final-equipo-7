@@ -17,6 +17,7 @@ public class TareaData implements Serializable {
     private Long usuarioId;
     private Integer position;
     private Set<Etiqueta> etiquetas;
+    private Boolean completada;
     @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
     private java.time.LocalDate fechaFinalizacion;
 
@@ -99,6 +100,14 @@ public class TareaData implements Serializable {
 
     public void setSubtareas(List<TareaData> subtareas) {
         this.subtareas = subtareas;
+    }
+
+    public Boolean getCompletada() {
+        return completada;
+    }
+
+    public void setCompletada(Boolean completada) {
+        this.completada = completada;
     }
 
     // Método auxiliar para verificar si es una tarea raíz

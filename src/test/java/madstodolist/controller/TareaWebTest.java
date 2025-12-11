@@ -220,4 +220,55 @@ public class TareaWebTest {
         TareaData tareaModificada = tareaService.findById(tareaId);
         assertThat(tareaModificada.getEtiquetas()).hasSize(2);
     }
+
+    @Test
+    public void completarTareaRedirigeAListado() throws Exception {
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
+
+        this.mockMvc.perform(post("/tareas/" + tareaId + "/completar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/usuarios/" + usuarioId + "/tareas"));
+    }
+
+    @Test
+    public void listadoTareasOcultaLasCompletadas() throws Exception {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        // Marcamos la tarea como completada en el servicio (simulación)
+        tareaService.completarTarea(tareaId);
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
+
+        // WHEN: Pedimos el listado normal
+        this.mockMvc.perform(get("/usuarios/" + usuarioId + "/tareas"))
+                .andExpect(status().isOk())
+                // THEN: No debería contener "Lavar coche" porque está completada
+                .andExpect(content().string(not(containsString("Lavar coche"))))
+                // Pero sí "Renovar DNI" que sigue pendiente
+                .andExpect(content().string(containsString("Renovar DNI")));
+    }
+
+    @Test
+    public void listadoTareasCompletadasMuestraLasCompletadas() throws Exception {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long usuarioId = ids.get("usuarioId");
+        Long tareaId = ids.get("tareaId");
+
+        tareaService.completarTarea(tareaId);
+        when(managerUserSession.usuarioLogeado()).thenReturn(usuarioId);
+
+        // WHEN: Pedimos el listado de completadas
+        this.mockMvc.perform(get("/usuarios/" + usuarioId + "/tareas/completadas"))
+                .andExpect(status().isOk())
+                // THEN: Debe salir "Lavar coche"
+                .andExpect(content().string(containsString("Lavar coche")));
+    }
 }

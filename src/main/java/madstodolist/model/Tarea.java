@@ -28,6 +28,10 @@ public class Tarea implements Serializable {
     @Column(name = "fecha_finalizacion")
     private LocalDate fechaFinalizacion;
 
+    // Inicializamos a false para que por defecto la tarea esté pendiente
+    @Column(nullable = false)
+    private Boolean completada = false;
+
     // Relación con Usuario (muchas tareas pertenecen a un usuario)
     @NotNull
     @ManyToOne
@@ -150,6 +154,14 @@ public class Tarea implements Serializable {
 
     public void setSubtareas(Set<Tarea> subtareas) {
         this.subtareas = subtareas;
+    }
+
+    public Boolean getCompletada() {
+        return completada;
+    }
+
+    public void setCompletada(Boolean completada) {
+        this.completada = completada;
     }
 
     // Método auxiliar para añadir una subtarea

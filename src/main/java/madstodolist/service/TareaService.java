@@ -101,6 +101,30 @@ public class TareaService {
                 .collect(Collectors.toList());
     }
 
+    // Listar tareas raíz de un usuario filtrando por estado (completadas o pendientes)
+    @Transactional(readOnly = true)
+    public List<TareaData> tareasUsuarioPorEstado(Long idUsuario, Boolean completada) {
+        // Usamos la nueva consulta del repositorio
+        List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioIdAndCompletada(idUsuario, completada);
+
+        // Inicializar posiciones si fuera necesario (solo para las pendientes tiene sentido ordenar, pero lo dejamos genérico)
+        if (!completada) {
+            inicializarPosicionesSiNecesario(tareasRaiz);
+        }
+
+        // Ordenar: Las pendientes por posición, las completadas por ID (o fecha si quisieras)
+        tareasRaiz.sort((t1, t2) -> {
+            if (!completada && t1.getPosition() != null && t2.getPosition() != null) {
+                return t1.getPosition().compareTo(t2.getPosition());
+            }
+            return t1.getId().compareTo(t2.getId());
+        });
+
+        return tareasRaiz.stream()
+                .map(this::convertirATareaData)
+                .collect(Collectors.toList());
+    }
+
     // Obtener las subtareas de una tarea específica
     @Transactional(readOnly = true)
     public List<TareaData> obtenerSubtareas(Long idTarea) {
@@ -233,6 +257,26 @@ public class TareaService {
         }
     }
 
+    @Transactional
+    public void completarTarea(Long idTarea) {
+        logger.debug("Completando tarea " + idTarea);
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        if (tarea == null) {
+            throw new TareaServiceException("No existe tarea con id " + idTarea);
+        }
+
+        // Validar que no tenga subtareas pendientes
+        boolean tieneSubtareasPendientes = tarea.getSubtareas().stream()
+                .anyMatch(sub -> !sub.getCompletada());
+
+        if (tieneSubtareasPendientes) {
+            throw new TareaServiceException("No se puede completar la tarea porque tiene subtareas pendientes");
+        }
+
+        tarea.setCompletada(true);
+        tareaRepository.save(tarea);
+    }
+
     // Método auxiliar para convertir Tarea a TareaData (incluyendo subtareas)
     private TareaData convertirATareaData(Tarea tarea) {
         TareaData tareaData = new TareaData();
@@ -244,6 +288,7 @@ public class TareaService {
         tareaData.setTareaPadreId(tarea.getTareaPadre() != null ? tarea.getTareaPadre().getId() : null);
         tareaData.setFechaFinalizacion(tarea.getFechaFinalizacion());
         tareaData.setEtiquetas(tarea.getEtiquetas());
+        tareaData.setCompletada(tarea.getCompletada());
 
         // Convertir subtareas recursivamente
         if (tarea.getSubtareas() != null && !tarea.getSubtareas().isEmpty()) {

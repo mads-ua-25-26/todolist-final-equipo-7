@@ -373,4 +373,54 @@ public class TareaServiceTest {
         tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD.getEtiquetas()).isEmpty();
     }
+
+    @Test
+    public void testCompletarTareaSinSubtareas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+
+        // WHEN
+        tareaService.completarTarea(tareaId);
+
+        // THEN
+        TareaData tarea = tareaService.findById(tareaId);
+        assertThat(tarea.getCompletada()).isTrue();
+    }
+
+    @Test
+    public void testCompletarTareaConSubtareasCompletadas() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        // Creamos subtarea y la completamos
+        TareaData subtarea = tareaService.nuevaSubtarea(tareaId, "Subtarea lista");
+        tareaService.completarTarea(subtarea.getId());
+
+        // WHEN
+        tareaService.completarTarea(tareaId);
+
+        // THEN
+        TareaData tarea = tareaService.findById(tareaId);
+        assertThat(tarea.getCompletada()).isTrue();
+    }
+
+    @Test
+    public void testNoSePuedeCompletarSiHaySubtareasPendientes() {
+        // GIVEN
+        Map<String, Long> ids = addUsuarioTareasBD();
+        Long tareaId = ids.get("tareaId");
+        // Creamos subtarea y NO la completamos (nace false por defecto)
+        tareaService.nuevaSubtarea(tareaId, "Subtarea pendiente");
+
+        // WHEN / THEN
+        // Esperamos que lance una excepción
+        org.junit.jupiter.api.Assertions.assertThrows(TareaServiceException.class, () -> {
+            tareaService.completarTarea(tareaId);
+        });
+
+        // Verificamos que NO se ha marcado como completada
+        TareaData tarea = tareaService.findById(tareaId);
+        assertThat(tarea.getCompletada()).isFalse();
+    }
 }
