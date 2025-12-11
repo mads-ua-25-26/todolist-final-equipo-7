@@ -358,4 +358,30 @@ public class TareaTest {
         assertThat(tareasRaiz).containsExactlyInAnyOrder(tarea1, tarea2);
         assertThat(tareasRaiz).doesNotContain(subtarea);
     }
+
+    @Test
+    public void comprobarEstadoCompletadaPorDefecto() {
+        // GIVEN
+        Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
+
+        // WHEN
+        Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
+
+        // THEN
+        // Verificamos que por defecto nace como FALSE (no completada)
+        assertThat(tarea.getCompletada()).isFalse();
+    }
+
+    @Test
+    public void cambiarEstadoCompletada() {
+        // GIVEN
+        Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
+        Tarea tarea = new Tarea(usuario, "Tarea simple");
+
+        // WHEN
+        tarea.setCompletada(true);
+
+        // THEN
+        assertThat(tarea.getCompletada()).isTrue();
+    }
 }
