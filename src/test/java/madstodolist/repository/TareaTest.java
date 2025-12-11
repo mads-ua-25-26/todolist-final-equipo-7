@@ -1,6 +1,5 @@
 package madstodolist.repository;
 
-
 import madstodolist.model.Tarea;
 import madstodolist.model.Usuario;
 import org.junit.jupiter.api.Assertions;
@@ -10,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,45 +24,49 @@ public class TareaTest {
     @Autowired
     TareaRepository tareaRepository;
 
-    //
-    // Tests modelo Tarea en memoria, sin la conexión con la BD
-    //
+    // Tests modelo Tarea en memoria
 
     @Test
     public void crearTarea() {
         // GIVEN
-        // Un usuario nuevo creado en memoria, sin conexión con la BD,
-
         Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
 
         // WHEN
-        // se crea una nueva tarea con ese usuario,
-
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
 
         // THEN
-        // el título y el usuario de la tarea son los correctos.
-
         assertThat(tarea.getTitulo()).isEqualTo("Práctica 1 de MADS");
         assertThat(tarea.getUsuario()).isEqualTo(usuario);
+        assertThat(tarea.esRaiz()).isTrue();
+    }
+
+    @Test
+    public void crearSubtarea() {
+        // GIVEN
+        Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
+        Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
+
+        // WHEN
+        Tarea subtarea = new Tarea(tareaPadre, "Subtarea 1");
+
+        // THEN
+        assertThat(subtarea.getTitulo()).isEqualTo("Subtarea 1");
+        assertThat(subtarea.getTareaPadre()).isEqualTo(tareaPadre);
+        assertThat(subtarea.esRaiz()).isFalse();
+        assertThat(tareaPadre.getSubtareas()).contains(subtarea);
+        assertThat(subtarea.getUsuario()).isEqualTo(usuario); // Hereda el usuario
     }
 
     @Test
     public void laListaDeTareasDeUnUsuarioSeActualizaEnMemoriaConUnaNuevaTarea() {
         // GIVEN
-        // Un usuario nuevo creado en memoria, sin conexión con la BD,
-
         Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
 
         // WHEN
-        // se crea una tarea de ese usuario,
-
         Set<Tarea> tareas = usuario.getTareas();
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
 
         // THEN
-        // la tarea creada se ha añadido a la lista de tareas del usuario.
-
         assertThat(usuario.getTareas()).contains(tarea);
         assertThat(tareas).contains(tarea);
     }
@@ -70,17 +74,12 @@ public class TareaTest {
     @Test
     public void comprobarIgualdadTareasSinId() {
         // GIVEN
-        // Creadas tres tareas sin identificador, y dos de ellas con
-        // la misma descripción
-
         Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
         Tarea tarea1 = new Tarea(usuario, "Práctica 1 de MADS");
         Tarea tarea2 = new Tarea(usuario, "Práctica 1 de MADS");
         Tarea tarea3 = new Tarea(usuario, "Pagar el alquiler");
 
         // THEN
-        // son iguales (Equal) las tareas que tienen la misma descripción.
-
         assertThat(tarea1).isEqualTo(tarea2);
         assertThat(tarea1).isNotEqualTo(tarea3);
     }
@@ -88,9 +87,6 @@ public class TareaTest {
     @Test
     public void comprobarIgualdadTareasConId() {
         // GIVEN
-        // Creadas tres tareas con distintas descripciones y dos de ellas
-        // con el mismo identificador,
-
         Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
         Tarea tarea1 = new Tarea(usuario, "Práctica 1 de MADS");
         Tarea tarea2 = new Tarea(usuario, "Lavar la ropa");
@@ -100,64 +96,67 @@ public class TareaTest {
         tarea3.setId(1L);
 
         // THEN
-        // son iguales (Equal) las tareas que tienen el mismo identificador.
-
         assertThat(tarea1).isEqualTo(tarea3);
         assertThat(tarea1).isNotEqualTo(tarea2);
     }
 
-    //
-    // Tests TareaRepository.
-    // El código que trabaja con repositorios debe
-    // estar en un entorno transactional, para que todas las peticiones
-    // estén en la misma conexión a la base de datos, las entidades estén
-    // conectadas y sea posible acceder a colecciones LAZY.
-    //
+    // Tests TareaRepository
 
     @Test
     @Transactional
     public void guardarTareaEnBaseDatos() {
         // GIVEN
-        // Un usuario en la base de datos.
-
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
-
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
 
         // WHEN
-        // salvamos la tarea en la BD,
-
         tareaRepository.save(tarea);
 
         // THEN
-        // se actualiza el id de la tarea,
-
         assertThat(tarea.getId()).isNotNull();
-
-        // y con ese identificador se recupera de la base de datos la tarea
-        // con los valores correctos de las propiedades y la relación con
-        // el usuario actualizado también correctamente (la relación entre tarea
-        // y usuario es EAGER).
-
         Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
         assertThat(tareaBD.getTitulo()).isEqualTo(tarea.getTitulo());
         assertThat(tareaBD.getUsuario()).isEqualTo(usuario);
+        assertThat(tareaBD.esRaiz()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    public void guardarSubtareaEnBaseDatos() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
+        tareaRepository.save(tareaPadre);
+
+        Tarea subtarea = new Tarea(tareaPadre, "Subtarea 1");
+
+        // WHEN
+        tareaRepository.save(subtarea);
+
+        // THEN
+        assertThat(subtarea.getId()).isNotNull();
+
+        Tarea subtareaBD = tareaRepository.findById(subtarea.getId()).orElse(null);
+        assertThat(subtareaBD.getTitulo()).isEqualTo("Subtarea 1");
+        assertThat(subtareaBD.getTareaPadre().getId()).isEqualTo(tareaPadre.getId());
+        assertThat(subtareaBD.esRaiz()).isFalse();
+
+        // Verificar que la tarea padre tiene la subtarea
+        Tarea tareaPadreBD = tareaRepository.findById(tareaPadre.getId()).orElse(null);
+        assertThat(tareaPadreBD.getSubtareas()).hasSize(1);
     }
 
     @Test
     @Transactional
     public void salvarTareaEnBaseDatosConUsuarioNoBDLanzaExcepcion() {
         // GIVEN
-        // Un usuario nuevo que no está en la BD
-        // y una tarea asociada a ese usuario,
-
         Usuario usuario = new Usuario("juan.gutierrez@gmail.com");
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
 
         // WHEN // THEN
-        // se lanza una excepción al intentar salvar la tarea en la BD
-
         Assertions.assertThrows(Exception.class, () -> {
             tareaRepository.save(tarea);
         });
@@ -167,7 +166,6 @@ public class TareaTest {
     @Transactional
     public void unUsuarioTieneUnaListaDeTareas() {
         // GIVEN
-        // Un usuario con 2 tareas en la base de datos
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
         Long usuarioId = usuario.getId();
@@ -178,14 +176,9 @@ public class TareaTest {
         tareaRepository.save(tarea2);
 
         // WHEN
-        // recuperamos el ususario de la base de datos,
-
         Usuario usuarioRecuperado = usuarioRepository.findById(usuarioId).orElse(null);
 
         // THEN
-        // su lista de tareas también se recupera, porque se ha
-        // definido la relación de usuario y tareas como EAGER.
-
         assertThat(usuarioRecuperado.getTareas()).hasSize(2);
     }
 
@@ -193,55 +186,41 @@ public class TareaTest {
     @Transactional
     public void añadirUnaTareaAUnUsuarioEnBD() {
         // GIVEN
-        // Un usuario en la base de datos
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
         Long usuarioId = usuario.getId();
 
         // WHEN
-        // Creamos una nueva tarea con el usuario recuperado de la BD
-        // y la salvamos,
-
         Usuario usuarioBD = usuarioRepository.findById(usuarioId).orElse(null);
         Tarea tarea = new Tarea(usuarioBD, "Práctica 1 de MADS");
         tareaRepository.save(tarea);
         Long tareaId = tarea.getId();
 
         // THEN
-        // la tarea queda guardada en la BD asociada al usuario
-
         Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD).isEqualTo(tarea);
         assertThat(tarea.getUsuario()).isEqualTo(usuarioBD);
 
-        // y si recuperamos el usuario se obtiene la nueva tarea
         usuarioBD = usuarioRepository.findById(usuarioId).orElse(null);
         assertThat(usuarioBD.getTareas()).contains(tareaBD);
     }
-
 
     @Test
     @Transactional
     public void cambioEnLaEntidadEnTransactionalModificaLaBD() {
         // GIVEN
-        // Un usuario y una tarea en la base de datos
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
         tareaRepository.save(tarea);
 
-        // Recuperamos la tarea
         Long tareaId = tarea.getId();
         tarea = tareaRepository.findById(tareaId).orElse(null);
 
         // WHEN
-        // modificamos la descripción de la tarea
-
         tarea.setTitulo("Esto es una prueba");
 
         // THEN
-        // la descripción queda actualizada en la BD.
-
         Tarea tareaBD = tareaRepository.findById(tareaId).orElse(null);
         assertThat(tareaBD.getTitulo()).isEqualTo(tarea.getTitulo());
     }
@@ -263,25 +242,93 @@ public class TareaTest {
     @Transactional
     public void guardarTareaConPosicionEnBaseDatos() {
         // GIVEN
-        // Un usuario en la base de datos
         Usuario usuario = new Usuario("user@ua");
         usuarioRepository.save(usuario);
 
-        // Creamos una tarea y le asignamos una posición
         Tarea tarea = new Tarea(usuario, "Práctica 1 de MADS");
         tarea.setPosition(3);
 
         // WHEN
-        // Guardamos la tarea
         tareaRepository.save(tarea);
 
         // THEN
-        // Recuperamos la tarea y verificamos que la posición se ha guardado
         assertThat(tarea.getId()).isNotNull();
         Tarea tareaBD = tareaRepository.findById(tarea.getId()).orElse(null);
         assertThat(tareaBD).isNotNull();
         assertThat(tareaBD.getPosition()).isEqualTo(3);
     }
 
+    @Test
+    @Transactional
+    public void eliminarTareaPadreEliminaSubtareas() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
 
+        Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
+        tareaRepository.save(tareaPadre);
+        Long tareaPadreId = tareaPadre.getId();
+
+        Tarea subtarea1 = new Tarea(tareaPadre, "Subtarea 1");
+        Tarea subtarea2 = new Tarea(tareaPadre, "Subtarea 2");
+        tareaRepository.save(subtarea1);
+        tareaRepository.save(subtarea2);
+        Long subtarea1Id = subtarea1.getId();
+        Long subtarea2Id = subtarea2.getId();
+
+        // WHEN
+        tareaRepository.delete(tareaPadre);
+
+        // THEN - Las subtareas también deben haber sido eliminadas
+        assertThat(tareaRepository.findById(tareaPadreId)).isEmpty();
+        assertThat(tareaRepository.findById(subtarea1Id)).isEmpty();
+        assertThat(tareaRepository.findById(subtarea2Id)).isEmpty();
+    }
+
+    @Test
+    @Transactional
+    public void recuperarSubtareasDeTarea() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tareaPadre = new Tarea(usuario, "Tarea principal");
+        tareaRepository.save(tareaPadre);
+
+        Tarea subtarea1 = new Tarea(tareaPadre, "Subtarea 1");
+        Tarea subtarea2 = new Tarea(tareaPadre, "Subtarea 2");
+        tareaRepository.save(subtarea1);
+        tareaRepository.save(subtarea2);
+
+        // WHEN
+        Tarea tareaBD = tareaRepository.findById(tareaPadre.getId()).orElse(null);
+
+        // THEN
+        assertThat(tareaBD.getSubtareas()).hasSize(2);
+        assertThat(tareaBD.getSubtareas()).contains(subtarea1, subtarea2);
+    }
+
+    @Test
+    @Transactional
+    public void findTareasRaizByUsuarioIdNoDevuelveSubtareas() {
+        // GIVEN
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        Tarea tarea1 = new Tarea(usuario, "Tarea 1");
+        Tarea tarea2 = new Tarea(usuario, "Tarea 2");
+        tareaRepository.save(tarea1);
+        tareaRepository.save(tarea2);
+
+        Tarea subtarea = new Tarea(tarea1, "Subtarea de Tarea 1");
+        tareaRepository.save(subtarea);
+
+        // WHEN
+        List<Tarea> tareasRaiz = tareaRepository.findTareasRaizByUsuarioId(usuario.getId());
+
+        // THEN - Solo deben aparecer las tareas raíz
+        assertThat(tareasRaiz).hasSize(2);
+        assertThat(tareasRaiz).containsExactlyInAnyOrder(tarea1, tarea2);
+        assertThat(tareasRaiz).doesNotContain(subtarea);
+    }
 }
