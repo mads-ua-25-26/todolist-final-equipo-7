@@ -1,6 +1,8 @@
 package madstodolist.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import madstodolist.model.Etiqueta;
@@ -18,6 +20,15 @@ public class TareaData implements Serializable {
     @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
     private java.time.LocalDate fechaFinalizacion;
 
+    private Long tareaPadreId; // ID de la tarea padre (null si es raíz)
+    private List<TareaData> subtareas; // Lista de subtareas
+
+    // Constructor vacío
+    public TareaData() {
+        this.subtareas = new ArrayList<>();
+    }
+
+    // Getters y setters
     public Long getId() {
         return id;
     }
@@ -74,6 +85,29 @@ public class TareaData implements Serializable {
         this.fechaFinalizacion = fechaFinalizacion;
     }
 
+    public Long getTareaPadreId() {
+        return tareaPadreId;
+    }
+
+    public void setTareaPadreId(Long tareaPadreId) {
+        this.tareaPadreId = tareaPadreId;
+    }
+
+    public List<TareaData> getSubtareas() {
+        return subtareas;
+    }
+
+    public void setSubtareas(List<TareaData> subtareas) {
+        this.subtareas = subtareas;
+    }
+
+    // Método auxiliar para verificar si es una tarea raíz
+    public boolean esRaiz() {
+        return tareaPadreId == null;
+    }
+
+    // Sobreescribimos equals y hashCode para que dos tareas sean iguales
+    // si tienen el mismo ID (ignoramos el resto de atributos)
     @Override
     public boolean equals(Object o) {
         if (this == o)
