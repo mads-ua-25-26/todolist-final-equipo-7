@@ -1,162 +1,143 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head th:replace="fragments :: head (titulo='Tareas')"></head>
 
 <body>
 <div th:replace="~{navbar}"></div>
+
 <div class="container-fluid">
 
     <div class="row mt-3">
-        <div class="col">
+        <div class="col d-flex justify-content-between align-items-center">
             <h2 th:text="'Listado de tareas de ' + ${usuario.nombre}"></h2>
+            <button type="submit" form="formReordenar" class="btn btn-warning shadow-sm">
+                <i class="fas fa-save"></i> Guardar orden
+            </button>
         </div>
     </div>
+
+    <form id="formReordenar" th:action="@{/tareas/guardarOrden}" method="post"></form>
 
     <div class="row mt-3">
         <div class="col">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th style="width: 40px;"></th>
-                    <th>Id</th>
-                    <th>Tarea</th>
-                    <th>Descripción</th>
-                    <th>Acción</th>
-                </tr>
-                </thead>
-                <tbody id="sortable-tareas">
-                <tr th:each="tarea: ${tareas}" th:data-id="${tarea.id}" class="sortable-item">
-                    <td class="drag-handle" style="cursor: move; text-align: center;">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="color: #999;">
-                            <circle cx="4" cy="3" r="1.5"/>
-                            <circle cx="12" cy="3" r="1.5"/>
-                            <circle cx="4" cy="8" r="1.5"/>
-                            <circle cx="12" cy="8" r="1.5"/>
-                            <circle cx="4" cy="13" r="1.5"/>
-                            <circle cx="12" cy="13" r="1.5"/>
-                        </svg>
-                    </td>
-                    <td th:text="${tarea.id}"></td>
-                    <td th:text="${tarea.titulo}"></td>
-                    <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
-                    <td>
-                        <a class="btn btn-primary btn-xs" th:href="@{/tareas/{id}/editar(id=${tarea.id})}">editar</a>
-                        <button class="btn btn-danger btn-xs" style="cursor: pointer;"
-                                th:onclick="'del(\'/tareas/' + ${tarea.id} + '\')'">borrar</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <p>
-                <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">Nueva tarea</a>
-                <a class="btn btn-link" href="/logout">Salir</a>
-            </p>
+            <div id="lista-tareas-raiz" class="list-group list-group-flush pb-5">
+                <th:block th:each="tarea : ${tareas}">
+                    <div th:replace=":: tareaFragment(taskItem=${tarea}, pContext='root', level=0)"></div>
+                </th:block>
+            </div>
         </div>
     </div>
 
-    <div class="row mt-2">
+    <div class="row mt-3 mb-5">
         <div class="col">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${!#strings.isEmpty(mensaje)}">
+            <a class="btn btn-primary btn-lg shadow" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">
+                <span style="font-size: 1.2em;">+</span> Nueva tarea principal
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-2" th:if="${!#strings.isEmpty(mensaje)}">
+        <div class="col">
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <span th:text="${mensaje}"></span>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
         </div>
     </div>
 </div>
 
+<div th:fragment="tareaFragment(taskItem, pContext, level)"
+     th:if="${taskItem != null}"
+     class="list-group-item p-0 border-0 mb-2"
+     style="background: transparent;">
+
+    <input type="hidden" form="formReordenar" th:name="'orden_' + ${pContext}" th:value="${taskItem?.id}" />
+
+    <div class="d-flex align-items-center border rounded p-3"
+         th:classappend="${level == 0 ? 'bg-white shadow-sm' : 'bg-light text-secondary'}"
+         th:style="|border-left: 4px solid #6c757d !important; margin-left: ${level * 20}px;|">
+
+        <div class="mr-3 drag-handle" style="cursor: move; opacity: 0.5;">
+            <span style="font-size: 1.5em;">☰</span>
+        </div>
+
+        <div class="flex-grow-1">
+            <span th:if="${level > 0}" class="text-muted mr-1" style="font-family: monospace; font-size: 1.2em;">└─</span>
+
+            <span th:class="${level == 0 ? 'h5 font-weight-bold' : 'font-weight-normal'}"
+                  th:text="${taskItem?.titulo}"></span>
+
+            <span class="badge badge-pill badge-light border ml-2" th:text="'ID: ' + ${taskItem?.id}"></span>
+        </div>
+
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-sm btn-outline-success mr-2"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'block\''"
+                    title="Añadir subtarea">
+                <span style="font-weight: bold;">+ Sub</span>
+            </button>
+
+            <a class="btn btn-sm btn-outline-primary mr-2" th:href="@{/tareas/{id}/editar(id=${taskItem?.id})}">
+                Editar
+            </a>
+
+            <form th:action="@{/tareas/{id}/borrar(id=${taskItem?.id})}" method="post"
+                  onsubmit="return confirm('¿Borrar esta tarea?');" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded bg-white shadow-sm"
+         th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #28a745 !important;|">
+
+        <form th:action="@{/tareas/{id}/subtareas/nueva(id=${taskItem?.id})}" method="post" class="form-inline">
+            <span class="mr-2 text-success font-weight-bold">↳ Nueva subtarea:</span>
+
+            <input type="text" name="titulo" class="form-control form-control-sm mr-2 flex-grow-1"
+                   placeholder="Título..." required>
+
+            <button type="submit" class="btn btn-sm btn-success">Guardar</button>
+            <button type="button" class="btn btn-sm btn-secondary ml-1"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'none\''">Cancelar</button>
+        </form>
+    </div>
+
+    <div class="lista-subtareas mt-1"
+         th:if="${taskItem?.subtareas != null and not #lists.isEmpty(taskItem.subtareas)}"
+         th:data-group-name="'group-' + ${taskItem.id}">
+
+        <th:block th:each="sub : ${taskItem.subtareas}">
+            <div th:replace=":: tareaFragment(taskItem=${sub}, pContext=${taskItem.id}, level=${level + 1})"></div>
+        </th:block>
+    </div>
+</div>
+
 <div th:replace="fragments::javascript"/>
 
-<!-- SortableJS CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
-<!-- Estilos para drag and drop -->
-<style>
-    /* Evita que el texto se seleccione al arrastrar */
-    .sortable-item {
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none;    /* Firefox */
-        -ms-user-select: none;     /* IE10+/Edge */
-        user-select: none;         /* Standard */
-    }
-
-    /* Opcional: Cambia el cursor para indicar que se puede agarrar */
-    .drag-handle {
-        cursor: grab;
-    }
-    .drag-handle:active {
-        cursor: grabbing;
-    }
-
-</style>
-
-<!-- Scripts -->
-<script type="text/javascript">
-    // Función para borrar tarea
-    function del(urlBorrar) {
-        if (confirm('¿Estás seguro/a de que quieres borrar la tarea?')) {
-            fetch(urlBorrar, {
-                method: 'DELETE'
-            }).then((res) => location.reload());
-        }
-    }
-
-    // Inicializar SortableJS cuando el DOM esté listo
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        const tbody = document.getElementById('sortable-tareas');
+        const config = {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'bg-info',
+            fallbackOnBody: true,
+            swapThreshold: 0.65
+        };
 
-        if (tbody && tbody.querySelectorAll('tr[data-id]').length > 0) {
-            Sortable.create(tbody, {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                chosenClass: 'sortable-chosen',
-                forceFallback: true, // Mejor soporte para touch
-
-                // Evento al soltar la tarea
-                onEnd: function(evt) {
-                    // Verificar si realmente cambió de posición
-                    if (evt.oldIndex === evt.newIndex) {
-                        return;
-                    }
-
-                    // Obtener el nuevo orden de IDs
-                    const ordenTareas = Array.from(tbody.querySelectorAll('tr[data-id]'))
-                        .map(tr => parseInt(tr.getAttribute('data-id')));
-
-                    // Enviar al servidor
-                    guardarOrden(ordenTareas);
-                }
-            });
+        const rootList = document.getElementById('lista-tareas-raiz');
+        if (rootList) {
+            Sortable.create(rootList, { ...config, group: { name: 'root', pull: false, put: false } });
         }
-    });
 
-    // Función para guardar el nuevo orden en el servidor
-    function guardarOrden(ordenTareas) {
-        fetch('/tareas/reordenar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ orden: ordenTareas })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al guardar el orden');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Orden guardado correctamente');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar el orden de las tareas. Por favor, recarga la página.');
-            });
-    }
+        const sublists = document.querySelectorAll('.lista-subtareas');
+        sublists.forEach(list => {
+            const groupName = list.getAttribute('data-group-name');
+            Sortable.create(list, { ...config, group: { name: groupName, pull: false, put: false } });
+        });
+    });
 </script>
 
 </body>
