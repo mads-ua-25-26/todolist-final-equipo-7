@@ -233,6 +233,26 @@ public class TareaService {
         }
     }
 
+    @Transactional
+    public void completarTarea(Long idTarea) {
+        logger.debug("Completando tarea " + idTarea);
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        if (tarea == null) {
+            throw new TareaServiceException("No existe tarea con id " + idTarea);
+        }
+
+        // Validar que no tenga subtareas pendientes
+        boolean tieneSubtareasPendientes = tarea.getSubtareas().stream()
+                .anyMatch(sub -> !sub.getCompletada());
+
+        if (tieneSubtareasPendientes) {
+            throw new TareaServiceException("No se puede completar la tarea porque tiene subtareas pendientes");
+        }
+
+        tarea.setCompletada(true);
+        tareaRepository.save(tarea);
+    }
+
     // Método auxiliar para convertir Tarea a TareaData (incluyendo subtareas)
     private TareaData convertirATareaData(Tarea tarea) {
         TareaData tareaData = new TareaData();
@@ -244,6 +264,7 @@ public class TareaService {
         tareaData.setTareaPadreId(tarea.getTareaPadre() != null ? tarea.getTareaPadre().getId() : null);
         tareaData.setFechaFinalizacion(tarea.getFechaFinalizacion());
         tareaData.setEtiquetas(tarea.getEtiquetas());
+        tareaData.setCompletada(tarea.getCompletada());
 
         // Convertir subtareas recursivamente
         if (tarea.getSubtareas() != null && !tarea.getSubtareas().isEmpty()) {
