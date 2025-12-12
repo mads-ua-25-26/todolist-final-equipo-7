@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: head (titulo='Papelera')"></head>
+
+<body>
+    <div th:replace="~{navbar}"></div>
+    <div class="container-fluid">
+
+        <div class="row mt-3">
+            <div class="col">
+                <h2 th:text="'Papelera de ' + ${usuario.nombre}"></h2>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col">
+                <div class="alert alert-info" th:if="${tareas.empty}">
+                    No hay tareas en la papelera.
+                </div>
+
+                <table class="table table-striped" th:if="${!tareas.empty}">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Tarea</th>
+                            <th>Etiquetas</th>
+                            <th>Descripción</th>
+                            <th>Fecha de finalización</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tarea: ${tareas}">
+                            <td th:text="${tarea.id}"></td>
+                            <td th:text="${tarea.titulo}"></td>
+                            <td>
+                                <span th:each="etiqueta : ${tarea.etiquetas}" class="badge badge-pill"
+                                    th:text="${etiqueta.nombre}"
+                                    th:style="'background-color: ' + ${etiqueta.color} + '; color: white; display: block; margin-bottom: 4px; width: fit-content;'">
+                                </span>
+                            </td>
+                            <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
+                            <td th:text="${tarea.fechaFinalizacion}"></td>
+                            <td>
+                                <form th:action="@{/tareas/{id}/restaurar(id=${tarea.id})}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn btn-success btn-xs"
+                                        style="cursor: pointer;">Restaurar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Volver al
+                        listado</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col">
+                <div class="alert alert-success alert-dismissible fade show" role="alert"
+                    th:if="${!#strings.isEmpty(mensaje)}">
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments::javascript" />
+</body>
+
+</html>

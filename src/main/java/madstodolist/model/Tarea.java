@@ -28,6 +28,9 @@ public class Tarea implements Serializable {
     @Column(name = "fecha_finalizacion")
     private LocalDate fechaFinalizacion;
 
+    @Column(nullable = false)
+    private Boolean visible = true;
+
     // Inicializamos a false para que por defecto la tarea esté pendiente
     @Column(nullable = false)
     private Boolean completada = false;
@@ -40,11 +43,7 @@ public class Tarea implements Serializable {
 
     // Relación muchos a muchos con Etiquetas
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "tarea_etiquetas",
-            joinColumns = @JoinColumn(name = "tarea_id"),
-            inverseJoinColumns = @JoinColumn(name = "etiqueta_id")
-    )
+    @JoinTable(name = "tarea_etiquetas", joinColumns = @JoinColumn(name = "tarea_id"), inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
     private Set<Etiqueta> etiquetas = new HashSet<>();
 
     // Relación recursiva: una tarea puede tener subtareas
@@ -57,7 +56,8 @@ public class Tarea implements Serializable {
     private Set<Tarea> subtareas = new HashSet<>();
 
     // Constructor vacío necesario para JPA
-    public Tarea() {}
+    public Tarea() {
+    }
 
     // Constructor para tarea raíz (sin padre)
     public Tarea(Usuario usuario, String titulo) {
@@ -162,6 +162,14 @@ public class Tarea implements Serializable {
 
     public void setCompletada(Boolean completada) {
         this.completada = completada;
+    }
+
+    public Boolean getVisible() {
+        return visible;
+    }
+
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
     }
 
     // Método auxiliar para añadir una subtarea
