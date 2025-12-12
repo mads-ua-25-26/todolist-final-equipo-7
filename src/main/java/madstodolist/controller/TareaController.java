@@ -240,6 +240,40 @@ public class TareaController {
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas/borradas";
     }
 
+    @PostMapping("/tareas/restaurar-batch")
+    public String restaurarTareasBatch(@RequestParam("ids") List<Long> ids, RedirectAttributes flash) {
+        if (ids == null || ids.isEmpty()) {
+            return "redirect:/login"; // O manejar error
+        }
+
+        // Comprobar usuario de la primera tarea (asumimos todas del mismo usuario
+        // contextualmente)
+        TareaData primera = tareaService.findById(ids.get(0));
+        if (primera != null) {
+            comprobarUsuarioLogeado(primera.getUsuarioId());
+            tareaService.restaurarTareas(ids);
+            flash.addFlashAttribute("mensaje", "Tareas restauradas correctamente");
+            return "redirect:/usuarios/" + primera.getUsuarioId() + "/tareas/borradas";
+        }
+        return "redirect:/login";
+    }
+
+    @PostMapping("/tareas/borrar-definitivamente-batch")
+    public String borrarTareasDefinitivamenteBatch(@RequestParam("ids") List<Long> ids, RedirectAttributes flash) {
+        if (ids == null || ids.isEmpty()) {
+            return "redirect:/login";
+        }
+
+        TareaData primera = tareaService.findById(ids.get(0));
+        if (primera != null) {
+            comprobarUsuarioLogeado(primera.getUsuarioId());
+            tareaService.borrarTareasDefinitivamente(ids);
+            flash.addFlashAttribute("mensaje", "Tareas eliminadas definitivamente");
+            return "redirect:/usuarios/" + primera.getUsuarioId() + "/tareas/borradas";
+        }
+        return "redirect:/login";
+    }
+
     @PostMapping("/tareas/guardarOrden")
     public String guardarOrdenGlobal(HttpServletRequest request, RedirectAttributes flash) {
         Long usuarioId = managerUserSession.usuarioLogeado();
