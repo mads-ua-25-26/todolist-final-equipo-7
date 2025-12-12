@@ -1,167 +1,273 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Tareas')"></head>
-
-<body>
-<div th:replace="~{navbar}"></div>
-
-<div class="container-fluid">
-
-    <div class="row mt-3">
-        <div class="col d-flex justify-content-between align-items-center">
-            <h2 th:text="${esListadoCompletadas == true ? 'Tareas completadas de ' : 'Listado de tareas de '} + ${usuario.nombre}"></h2>
-            <button type="submit" form="formReordenar" class="btn btn-warning shadow-sm">
-                <i class="fas fa-save"></i> Guardar orden
-            </button>
-        </div>
-    </div>
-
-    <form id="formReordenar" th:action="@{/tareas/guardarOrden}" method="post"></form>
-
-    <div class="row mt-3">
-        <div class="col">
-            <div id="lista-tareas-raiz" class="list-group list-group-flush pb-5">
-                <th:block th:each="tarea : ${tareas}">
-                    <div th:replace=":: tareaFragment(taskItem=${tarea}, pContext='root', level=0)"></div>
-                </th:block>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-3 mb-5">
-        <div class="col">
-            <a class="btn btn-primary btn-lg shadow" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">
-                <span style="font-size: 1.2em;">+</span> Nueva tarea principal
-            </a>
-        </div>
-    </div>
-
-    <div class="row mt-2" th:if="${!#strings.isEmpty(mensaje)}">
-        <div class="col">
-            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                <span th:text="${mensaje}"></span>
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div th:fragment="tareaFragment(taskItem, pContext, level)"
-     th:if="${taskItem != null}"
-     class="list-group-item p-0 border-0 mb-2"
-     style="background: transparent;">
-
-    <input type="hidden" form="formReordenar" th:name="'orden_' + ${pContext}" th:value="${taskItem?.id}" />
-
-    <div class="d-flex align-items-center border rounded p-3"
-         th:classappend="${level == 0 ? 'bg-white shadow-sm' : 'bg-light text-secondary'}"
-         th:style="|border-left: 4px solid #6c757d !important; margin-left: ${level * 20}px;|">
-
-        <div class="mr-3 drag-handle" style="cursor: move; opacity: 0.5;">
-            <span style="font-size: 1.5em;">☰</span>
-        </div>
-
-        <div class="flex-grow-1">
-            <span th:if="${level > 0}" class="text-muted mr-1" style="font-family: monospace; font-size: 1.2em;">└─</span>
-
-            <span th:class="${level == 0 ? 'h5 font-weight-bold' : 'font-weight-normal'}"
-                  th:text="${taskItem?.titulo}"></span>
-
-            <span class="badge badge-pill badge-light border ml-2" th:text="'ID: ' + ${taskItem?.id}"></span>
-
-            <!-- Etiquetas -->
-            <span th:each="etiqueta : ${taskItem?.etiquetas}" class="badge badge-pill ml-1"
-                  th:text="${etiqueta.nombre}"
-                  th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
-            </span>
-
-            <!-- Fecha de finalización -->
-            <span th:if="${taskItem?.fechaFinalizacion != null}" class="text-muted ml-2">
-                <small>Vence: <span th:text="${taskItem.fechaFinalizacion}"></span></small>
-            </span>
-        </div>
-
-        <div class="d-flex align-items-center">
-            <button th:if="${esListadoCompletadas != true}"
-                    type="button" class="btn btn-sm btn-outline-success mr-2"
-                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'block\''"
-                    title="Añadir subtarea">
-                <span style="font-weight: bold;">+ Sub</span>
-            </button>
-
-            <a th:if="${esListadoCompletadas != true}"
-               class="btn btn-sm btn-outline-primary mr-2"
-               th:href="@{/tareas/{id}/editar(id=${taskItem?.id})}">
-                Editar
-            </a>
-
-            <form th:if="${esListadoCompletadas != true}"
-                  th:action="@{/tareas/{id}/completar(id=${taskItem?.id})}" method="post"
-                  style="display:inline;" class="mr-2">
-                <button type="submit" class="btn btn-sm btn-success"
-                        title="Marcar como completada">
-                    Completada
-                </button>
-            </form>
-
-            <form th:action="@{/tareas/{id}/borrar(id=${taskItem?.id})}" method="post"
-                  onsubmit="return confirm('¿Borrar esta tarea?');" style="display:inline;">
-                <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
-            </form>
-        </div>
-    </div>
-
-    <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded bg-white shadow-sm"
-         th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #28a745 !important;|">
-
-        <form th:action="@{/tareas/{id}/subtareas/nueva(id=${taskItem?.id})}" method="post" class="form-inline">
-            <span class="mr-2 text-success font-weight-bold">↳ Nueva subtarea:</span>
-
-            <input type="text" name="titulo" class="form-control form-control-sm mr-2 flex-grow-1"
-                   placeholder="Título..." required>
-
-            <button type="submit" class="btn btn-sm btn-success">Guardar</button>
-            <button type="button" class="btn btn-sm btn-secondary ml-1"
-                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'none\''">Cancelar</button>
-        </form>
-    </div>
-
-    <div class="lista-subtareas mt-1"
-         th:if="${taskItem?.subtareas != null and not #lists.isEmpty(taskItem.subtareas)}"
-         th:data-group-name="'group-' + ${taskItem.id}">
-
-        <th:block th:each="sub : ${taskItem.subtareas}">
-            <div th:replace=":: tareaFragment(taskItem=${sub}, pContext=${taskItem.id}, level=${level + 1})"></div>
-        </th:block>
-    </div>
-</div>
-
-<div th:replace="fragments::javascript"/>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const config = {
-            animation: 150,
-            handle: '.drag-handle',
-            ghostClass: 'bg-info',
-            fallbackOnBody: true,
-            swapThreshold: 0.65
-        };
-
-        const rootList = document.getElementById('lista-tareas-raiz');
-        if (rootList) {
-            Sortable.create(rootList, { ...config, group: { name: 'root', pull: false, put: false } });
+<head>
+    <th:block th:replace="fragments :: head (titulo='Tareas')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Page Style (Dark Theme Default) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
         }
 
-        const sublists = document.querySelectorAll('.lista-subtareas');
-        sublists.forEach(list => {
-            const groupName = list.getAttribute('data-group-name');
-            Sortable.create(list, { ...config, group: { name: groupName, pull: false, put: false } });
+        /* Glassmorphism for Task Items */
+        .glass-task {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .glass-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-task-sub {
+            background: rgba(30, 41, 59, 0.4);
+            /* Slightly more transparent for subtasks */
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+        }
+
+        /* Text Colors */
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Titles inside tasks */
+        .h5.font-weight-bold {
+            color: #e2e8f0;
+        }
+
+        /* Light Mode Overrides (if body has 'light-theme' class - checking how navbar does it) 
+           Navbar.html usually toggles a class or sets a cookie. 
+           If the user wants strictly the Login style which is dark, I will stick to dark defaults.
+           But I should match standard Light Mode if the app supports it.
+        */
+        /* Light Mode Overrides using data-bs-theme attribute */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-task {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] .glass-task-sub {
+            background: rgba(255, 255, 255, 0.6);
+            color: #334155;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .text-muted {
+            color: #64748b !important;
+        }
+
+        [data-bs-theme="light"] .h5.font-weight-bold {
+            color: #0f172a;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{navbar}"></div>
+
+    <div class="container-fluid" style="padding-top: 20px;">
+
+        <div class="row mt-3">
+            <div class="col d-flex justify-content-between align-items-center">
+                <h2
+                    th:text="${esListadoCompletadas == true ? 'Tareas completadas de ' : 'Listado de tareas de '} + ${usuario.nombre}">
+                </h2>
+                <button type="submit" form="formReordenar" class="btn shadow-sm hover-lift"
+                    style="background-color: #10b981; color: white; border-radius: 9999px; padding: 8px 20px; font-weight: 600; border: none;">
+                    <i class="fas fa-save"></i> Guardar orden
+                </button>
+            </div>
+        </div>
+
+        <form id="formReordenar" th:action="@{/tareas/guardarOrden}" method="post"></form>
+
+        <div class="row mt-3">
+            <div class="col">
+                <div id="lista-tareas-raiz" class="list-group list-group-flush pb-5" style="border-radius: 1rem;">
+                    <th:block th:each="tarea : ${tareas}">
+                        <div th:replace=":: tareaFragment(taskItem=${tarea}, pContext='root', level=0)"></div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3 mb-5">
+            <div class="col text-center">
+                <a class="btn btn-lg shadow hover-lift"
+                    style="background-color: #10b981; color: white; border-radius: 9999px; padding: 12px 30px; font-weight: 600;"
+                    th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}">
+                    <span style="font-size: 1.2em; vertical-align: middle;">+</span> Nueva tarea principal
+                </a>
+            </div>
+        </div>
+
+        <div class="row mt-2" th:if="${!#strings.isEmpty(mensaje)}">
+            <div class="col">
+                <div class="alert alert-success alert-dismissible fade show shadow-sm glass-task" role="alert"
+                    style="border-left: 4px solid #10b981;">
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="close text-white" data-dismiss="alert">&times;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="tareaFragment(taskItem, pContext, level)" th:if="${taskItem != null}"
+        class="list-group-item p-0 border-0 mb-2" style="background: transparent;">
+
+        <input type="hidden" form="formReordenar" th:name="'orden_' + ${pContext}" th:value="${taskItem?.id}" />
+
+        <div class="d-flex align-items-center border rounded p-3"
+            th:classappend="${level == 0 ? 'glass-task shadow-sm' : 'glass-task-sub'}"
+            th:style="|border-left: 4px solid #6c757d !important; margin-left: ${level * 20}px;|">
+
+            <div class="mr-4 drag-handle" style="cursor: move; opacity: 0.5; padding-right: 20px;">
+                <span style="font-size: 1.5em;">☰</span>
+            </div>
+
+            <div class="flex-grow-1">
+                <span th:if="${level > 0}" class="text-muted mr-1"
+                    style="font-family: monospace; font-size: 1.2em;">└─</span>
+
+                <div class="d-block mb-1">
+                    <span th:class="${level == 0 ? 'h5 font-weight-bold' : 'font-weight-normal'}"
+                        th:style="${esListadoCompletadas == true ? 'text-decoration: line-through;' : ''}"
+                        th:text="'Tarea: ' + ${taskItem?.titulo}"></span>
+                </div>
+
+                <p class="mb-1 text-muted small"
+                    th:if="${taskItem?.descripcion != null and !#strings.isEmpty(taskItem.descripcion)}"
+                    th:text="'Descripción: ' + ${taskItem.descripcion}"></p>
+
+                <!-- Etiquetas -->
+                <span th:each="etiqueta : ${taskItem?.etiquetas}" class="badge badge-pill ml-1"
+                    th:text="${etiqueta.nombre}"
+                    th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
+                </span>
+
+                <!-- Fecha de finalización -->
+                <span th:if="${taskItem?.fechaFinalizacion != null}" class="text-muted ml-2">
+                    <small>Vence: <span th:text="${taskItem.fechaFinalizacion}"></span></small>
+                </span>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <button th:if="${esListadoCompletadas != true}" type="button" class="btn btn-link p-0 mr-2"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'block\''"
+                    title="Añadir subtarea">
+                    <img th:src="@{/images/subtareas.png}" alt="Subtarea" width="40" height="40">
+                </button>
+
+                <a th:if="${esListadoCompletadas != true}" class="btn btn-link p-0 mr-2"
+                    th:href="@{/tareas/{id}/editar(id=${taskItem?.id})}" title="Editar">
+                    <img th:src="@{/images/editar.png}" alt="Editar" width="40" height="40">
+                </a>
+
+                <!-- Botón Completada / Icono Completada -->
+                <form th:if="${esListadoCompletadas != true}" th:action="@{/tareas/{id}/completar(id=${taskItem?.id})}"
+                    method="post" style="display:inline;" class="mr-2">
+                    <button type="submit" class="btn btn-link p-0" title="Marcar como completada">
+                        <img th:src="@{/images/por-completar.png}" alt="Completar" width="40" height="40">
+                    </button>
+                </form>
+
+                <span th:if="${esListadoCompletadas == true}" class="mr-2">
+                    <img th:src="@{/images/subtarea-completada.png}" alt="Completada" width="40" height="40">
+                </span>
+
+                <form th:action="@{/tareas/{id}/borrar(id=${taskItem?.id})}" method="post"
+                    onsubmit="return confirm('¿Borrar esta tarea?');" style="display:inline;">
+                    <button type="submit" class="btn btn-link p-0" title="Borrar">
+                        <img th:src="@{/images/borrar.png}" alt="Borrar" width="40" height="40">
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded bg-white shadow-sm"
+            th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #28a745 !important;|">
+
+            <form th:action="@{/tareas/{id}/subtareas/nueva(id=${taskItem?.id})}" method="post" class="form-inline">
+                <span class="mr-2 text-success font-weight-bold">↳ Nueva subtarea:</span>
+
+                <input type="text" name="titulo" class="form-control form-control-sm mr-2 flex-grow-1"
+                    placeholder="Título..." required>
+
+                <button type="submit" class="btn btn-sm btn-success">Guardar</button>
+                <button type="button" class="btn btn-sm btn-secondary ml-1"
+                    th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'none\''">Cancelar</button>
+            </form>
+        </div>
+
+        <div class="lista-subtareas mt-1"
+            th:if="${taskItem?.subtareas != null and not #lists.isEmpty(taskItem.subtareas)}"
+            th:data-group-name="'group-' + ${taskItem.id}">
+
+            <th:block th:each="sub : ${taskItem.subtareas}">
+                <div th:replace=":: tareaFragment(taskItem=${sub}, pContext=${taskItem.id}, level=${level + 1})"></div>
+            </th:block>
+        </div>
+    </div>
+
+    <div th:replace="fragments::javascript" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const config = {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'bg-info',
+                fallbackOnBody: true,
+                swapThreshold: 0.65
+            };
+
+            const rootList = document.getElementById('lista-tareas-raiz');
+            if (rootList) {
+                Sortable.create(rootList, { ...config, group: { name: 'root', pull: false, put: false } });
+            }
+
+            const sublists = document.querySelectorAll('.lista-subtareas');
+            sublists.forEach(list => {
+                const groupName = list.getAttribute('data-group-name');
+                Sortable.create(list, { ...config, group: { name: groupName, pull: false, put: false } });
+            });
         });
-    });
-</script>
+    </script>
 
 </body>
+
 </html>
