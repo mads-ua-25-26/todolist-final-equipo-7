@@ -211,6 +211,23 @@ public class TareaService {
         tareaRepository.save(tarea);
     }
 
+    @Transactional
+    public void restaurarTareas(List<Long> idsTareas) {
+        for (Long id : idsTareas) {
+            restaurarTarea(id);
+        }
+    }
+
+    @Transactional
+    public void borrarTareasDefinitivamente(List<Long> idsTareas) {
+        for (Long id : idsTareas) {
+            logger.debug("Borrando definitivamente tarea " + id);
+            if (tareaRepository.existsById(id)) {
+                tareaRepository.deleteById(id);
+            }
+        }
+    }
+
     @Transactional(readOnly = true)
     public boolean usuarioContieneTarea(Long usuarioId, Long tareaId) {
         Tarea tarea = tareaRepository.findById(tareaId).orElse(null);

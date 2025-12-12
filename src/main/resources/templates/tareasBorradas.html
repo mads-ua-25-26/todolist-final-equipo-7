@@ -8,8 +8,17 @@
     <div class="container-fluid">
 
         <div class="row mt-3">
-            <div class="col">
+            <div class="col d-flex justify-content-between align-items-center">
                 <h2 th:text="'Papelera de ' + ${usuario.nombre}"></h2>
+                <div th:if="${!tareas.empty}">
+                    <button type="submit" class="btn btn-success" form="formTareasBorradas"
+                        formaction="/tareas/restaurar-batch">Restaurar seleccionadas</button>
+                    <button type="submit" class="btn btn-danger" form="formTareasBorradas"
+                        formaction="/tareas/borrar-definitivamente-batch"
+                        onclick="return confirm('¿Estás seguro de que quieres eliminar definitivamente estas tareas? Esta acción no se puede deshacer.')">
+                        Eliminar definitivamente
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -19,39 +28,58 @@
                     No hay tareas en la papelera.
                 </div>
 
-                <table class="table table-striped" th:if="${!tareas.empty}">
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Tarea</th>
-                            <th>Etiquetas</th>
-                            <th>Descripción</th>
-                            <th>Fecha de finalización</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="tarea: ${tareas}">
-                            <td th:text="${tarea.id}"></td>
-                            <td th:text="${tarea.titulo}"></td>
-                            <td>
-                                <span th:each="etiqueta : ${tarea.etiquetas}" class="badge badge-pill"
-                                    th:text="${etiqueta.nombre}"
-                                    th:style="'background-color: ' + ${etiqueta.color} + '; color: white; display: block; margin-bottom: 4px; width: fit-content;'">
-                                </span>
-                            </td>
-                            <td th:text="${tarea.descripcion != null ? tarea.descripcion : ''}"></td>
-                            <td th:text="${tarea.fechaFinalizacion}"></td>
-                            <td>
-                                <form th:action="@{/tareas/{id}/restaurar(id=${tarea.id})}" method="post"
-                                    style="display: inline;">
-                                    <button type="submit" class="btn btn-success btn-xs"
+                <form method="post" id="formTareasBorradas" th:if="${!tareas.empty}">
+
+
+                    <!-- Select All Checkbox Container for the new layout -->
+                    <div class="mb-2 p-2" th:if="${!tareas.empty}">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="selectAll">
+                            <label class="custom-control-label" for="selectAll">Seleccionar todo</label>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush pb-5">
+                        <div th:each="tarea : ${tareas}" class="list-group-item p-0 border-0 mb-2"
+                            style="background: transparent;">
+                            <div class="d-flex align-items-center border rounded p-3 bg-white shadow-sm"
+                                style="border-left: 4px solid #6c757d !important;">
+
+                                <!-- Checkbox -->
+                                <div class="mr-3">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input task-checkbox" name="ids"
+                                            th:value="${tarea.id}" th:id="'check-' + ${tarea.id}">
+                                        <label class="custom-control-label" th:for="'check-' + ${tarea.id}"></label>
+                                    </div>
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <span class="h5 font-weight-bold" th:text="${tarea.titulo}"></span>
+
+                                    <!-- Etiquetas -->
+                                    <span th:each="etiqueta : ${tarea.etiquetas}" class="badge badge-pill ml-1"
+                                        th:text="${etiqueta.nombre}"
+                                        th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
+                                    </span>
+
+                                    <!-- Fecha de finalización -->
+                                    <span th:if="${tarea.fechaFinalizacion != null}" class="text-muted ml-2">
+                                        <small>Vence: <span th:text="${tarea.fechaFinalizacion}"></span></small>
+                                    </span>
+
+                                    <!-- Description (Optional, kept simple like list) -->
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    <button type="submit" class="btn btn-sm btn-success"
+                                        th:formaction="@{/tareas/{id}/restaurar(id=${tarea.id})}"
                                         style="cursor: pointer;">Restaurar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
                 <p>
                     <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Volver al
                         listado</a>
@@ -73,6 +101,14 @@
     </div>
 
     <div th:replace="fragments::javascript" />
+    <script>
+        document.getElementById('selectAll').addEventListener('change', function () {
+            var checkboxes = document.getElementsByClassName('task-checkbox');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = this.checked;
+            }
+        });
+    </script>
 </body>
 
 </html>
