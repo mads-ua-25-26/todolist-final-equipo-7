@@ -1,6 +1,112 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
+<!-- Custom Navbar Styles -->
+<style>
+  .navbar-custom {
+    backdrop-filter: blur(12px);
+    transition: background-color 0.3s, border-color 0.3s;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  /* Brand Style */
+  .navbar-custom .navbar-brand {
+    font-weight: 800;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.025em;
+    font-size: 1.25rem;
+  }
+
+  /* Link Styles */
+  .navbar-custom .nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+
+  /* DARK MODE (Default/Moon) */
+  [data-bs-theme="dark"] .navbar-custom {
+    background-color: rgba(15, 23, 42, 0.8);
+    /* Slate 900 transparent */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  [data-bs-theme="dark"] .navbar-custom .navbar-brand {
+    color: #f8fafc;
+    /* Slate 50 */
+  }
+
+  [data-bs-theme="dark"] .navbar-custom .nav-link {
+    color: #94a3b8;
+    /* Slate 400 */
+  }
+
+  [data-bs-theme="dark"] .navbar-custom .nav-link:hover,
+  [data-bs-theme="dark"] .navbar-custom .nav-link.active {
+    color: #10b981;
+    /* Emerald 400 */
+  }
+
+  [data-bs-theme="dark"] .dropdown-menu {
+    background-color: rgba(30, 41, 59, 0.9);
+    /* Slate 800 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  [data-bs-theme="dark"] .dropdown-item {
+    color: #cbd5e1;
+    /* Slate 300 */
+  }
+
+  [data-bs-theme="dark"] .dropdown-item:hover {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+
+  [data-bs-theme="dark"] .dropdown-divider {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  [data-bs-theme="dark"] .navbar-toggler-icon {
+    filter: invert(1);
+    /* Ensure icon is visible on dark */
+  }
+
+
+  /* LIGHT MODE (Sun) */
+  [data-bs-theme="light"] .navbar-custom {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  [data-bs-theme="light"] .navbar-custom .navbar-brand {
+    color: #0f172a;
+    /* Slate 900 */
+  }
+
+  [data-bs-theme="light"] .navbar-custom .nav-link {
+    color: #64748b;
+    /* Slate 500 */
+  }
+
+  [data-bs-theme="light"] .navbar-custom .nav-link:hover,
+  [data-bs-theme="light"] .navbar-custom .nav-link.active {
+    color: #059669;
+    /* Emerald 600 */
+  }
+
+  /* Theme Toggle Button Style Override */
+  #bd-theme {
+    border: none;
+    background: transparent;
+  }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
   <div class="container">
-    <a class="navbar-brand" href="/">ToDoList</a>
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img th:src="@{/images/logo.png}" alt="Logo" width="30" height="30" class="d-inline-block align-top me-2">
+      ToDoList
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
