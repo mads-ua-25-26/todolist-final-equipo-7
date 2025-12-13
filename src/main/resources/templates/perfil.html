@@ -1,61 +1,286 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments :: head (titulo='Mi Perfil')"></head>
+
+<head>
+    <th:block th:replace="fragments :: head (titulo='Mi Perfil')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Page Style (Dark Theme Default) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Page Title */
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Profile Card with Glassmorphism */
+        .profile-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Profile Info Row */
+        .profile-info-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .profile-info-row:hover {
+            background: rgba(15, 23, 42, 0.7);
+            transform: translateX(4px);
+        }
+
+        .profile-info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .profile-info-icon i {
+            color: #10b981;
+            font-size: 1.2rem;
+        }
+
+        .profile-info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-info-value {
+            font-size: 1rem;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        /* Badge Styles */
+        .badge-admin {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-user {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            background-color: transparent;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            border-radius: 0.5rem;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary-custom:hover {
+            background-color: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        /* Light Mode Overrides */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .profile-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] .profile-info-row {
+            background: rgba(241, 245, 249, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        [data-bs-theme="light"] .profile-info-row:hover {
+            background: rgba(226, 232, 240, 0.8);
+        }
+
+        [data-bs-theme="light"] .profile-info-label {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .profile-info-value {
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .badge-user {
+            background: rgba(100, 116, 139, 0.1);
+            color: #475569;
+        }
+    </style>
+</head>
 
 <body>
-<div th:replace="~{navbar}"></div>
+    <div th:replace="~{navbar}"></div>
 
-<div class="container-fluid">
-    <div class="row mt-3">
-        <div class="col">
-            <h2>Mi Perfil</h2>
+    <div class="container mt-5 pb-5">
+        <h2 class="mb-4 text-center">Mi Perfil</h2>
+
+        <div class="profile-card">
+            <!-- User ID -->
+            <div class="profile-info-row">
+                <div class="profile-info-icon">
+                    <i class="fas fa-hashtag"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="profile-info-label">ID de Usuario</div>
+                    <div class="profile-info-value" th:text="${usuario.id}"></div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="profile-info-row">
+                <div class="profile-info-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="profile-info-label">Correo Electrónico</div>
+                    <div class="profile-info-value" th:text="${usuario.email}"></div>
+                </div>
+            </div>
+
+            <!-- Name -->
+            <div class="profile-info-row">
+                <div class="profile-info-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="profile-info-label">Nombre</div>
+                    <div class="profile-info-value"
+                        th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}"></div>
+                </div>
+            </div>
+
+            <!-- Birth Date -->
+            <div class="profile-info-row">
+                <div class="profile-info-icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="profile-info-label">Fecha de Nacimiento</div>
+                    <div class="profile-info-value"
+                        th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Type -->
+            <div class="profile-info-row">
+                <div class="profile-info-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="profile-info-label">Tipo de Cuenta</div>
+                    <div class="profile-info-value">
+                        <span th:if="${usuario.admin}" class="badge-admin">
+                            <i class="fas fa-crown"></i> Administrador
+                        </span>
+                        <span th:unless="${usuario.admin}" class="badge-user">
+                            <i class="fas fa-user"></i> Usuario Regular
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
+                <a class="btn btn-primary-custom" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                    <i class="fas fa-tasks"></i> Ver mis tareas
+                </a>
+                <a class="btn btn-secondary-custom" href="/logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="row mt-3">
-        <div class="col">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Campo</th>
-                    <th>Valor</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><strong>Id</strong></td>
-                    <td th:text="${usuario.id}"></td>
-                </tr>
-                <tr>
-                    <td><strong>Email</strong></td>
-                    <td th:text="${usuario.email}"></td>
-                </tr>
-                <tr>
-                    <td><strong>Nombre</strong></td>
-                    <td th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}"></td>
-                </tr>
-                <tr>
-                    <td><strong>Fecha de Nacimiento</strong></td>
-                    <td th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}"></td>
-                </tr>
-                <tr>
-                    <td><strong>Tipo de Cuenta</strong></td>
-                    <td>
-                        <span th:if="${usuario.admin}" class="badge bg-warning text-dark">Administrador</span>
-                        <span th:unless="${usuario.admin}" class="badge bg-secondary">Usuario Regular</span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <p>
-                <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Ver mis tareas</a>
-                <a class="btn btn-link" href="/logout">Salir</a>
-            </p>
-        </div>
-    </div>
-</div>
-
-<div th:replace="fragments::javascript"/>
+    <div th:replace="fragments::javascript" />
 
 </body>
+
 </html>

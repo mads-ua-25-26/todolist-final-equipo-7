@@ -1,49 +1,141 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Papelera')"></head>
+<head>
+    <th:block th:replace="fragments :: head (titulo='Papelera')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Page Style (Dark Theme Default) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism for Task Items */
+        .glass-task {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .glass-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Text Colors */
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Titles inside tasks */
+        .h5.font-weight-bold {
+            color: #e2e8f0;
+        }
+
+        /* Light Mode Overrides */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-task {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .text-muted {
+            color: #64748b !important;
+        }
+
+        [data-bs-theme="light"] .h5.font-weight-bold {
+            color: #0f172a;
+        }
+    </style>
+</head>
 
 <body>
     <div th:replace="~{navbar}"></div>
-    <div class="container-fluid">
+    <div class="container-fluid" style="padding-top: 20px;">
 
-        <div class="row mt-3">
+        <div class="row mt-3 mb-4">
             <div class="col d-flex justify-content-between align-items-center">
                 <h2 th:text="'Papelera de ' + ${usuario.nombre}"></h2>
                 <div th:if="${!tareas.empty}">
-                    <button type="submit" class="btn btn-success" form="formTareasBorradas"
-                        formaction="/tareas/restaurar-batch">Restaurar seleccionadas</button>
-                    <button type="submit" class="btn btn-danger" form="formTareasBorradas"
+                    <button type="submit" class="btn btn-sm shadow-sm font-weight-bold ml-2"
+                        style="background-color: #10b981; color: white; border: none; border-radius: 9999px; padding: 8px 16px;"
+                        form="formTareasBorradas" formaction="/tareas/restaurar-batch">
+                        <i class="fas fa-trash-restore"></i> Restaurar seleccionadas
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-danger shadow-sm font-weight-bold ml-2"
+                        style="border-radius: 9999px; padding: 8px 16px;" form="formTareasBorradas"
                         formaction="/tareas/borrar-definitivamente-batch"
                         onclick="return confirm('¿Estás seguro de que quieres eliminar definitivamente estas tareas? Esta acción no se puede deshacer.')">
-                        Eliminar definitivamente
+                        <i class="fas fa-times"></i> Eliminar definitivamente
                     </button>
+                    <a class="btn btn-sm btn-outline-secondary shadow-sm font-weight-bold ml-2"
+                        style="border-radius: 9999px; padding: 8px 16px;"
+                        th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div th:if="${tareas.empty}">
+                    <a class="btn btn-sm btn-outline-secondary shadow-sm font-weight-bold"
+                        style="border-radius: 9999px; padding: 8px 16px;"
+                        th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                        <i class="fas fa-arrow-left"></i> Volver listado
+                    </a>
                 </div>
             </div>
         </div>
 
         <div class="row mt-3">
             <div class="col">
-                <div class="alert alert-info" th:if="${tareas.empty}">
-                    No hay tareas en la papelera.
+                <div class="alert glass-task text-center" th:if="${tareas.empty}"
+                    style="border-left: 4px solid #3b82f6;">
+                    <i class="fas fa-info-circle"></i> No hay tareas en la papelera.
                 </div>
 
                 <form method="post" id="formTareasBorradas" th:if="${!tareas.empty}">
 
-
-                    <!-- Select All Checkbox Container for the new layout -->
-                    <div class="mb-2 p-2" th:if="${!tareas.empty}">
-                        <div class="custom-control custom-checkbox">
+                    <!-- Select All Checkbox Container -->
+                    <div class="mb-3 p-2">
+                        <div class="custom-control custom-checkbox text-muted">
                             <input type="checkbox" class="custom-control-input" id="selectAll">
-                            <label class="custom-control-label" for="selectAll">Seleccionar todo</label>
+                            <label class="custom-control-label" for="selectAll" style="cursor:pointer;">Seleccionar
+                                todo</label>
                         </div>
                     </div>
 
-                    <div class="list-group list-group-flush pb-5">
+                    <div class="list-group list-group-flush pb-5" style="border-radius: 1rem;">
                         <div th:each="tarea : ${tareas}" class="list-group-item p-0 border-0 mb-2"
                             style="background: transparent;">
-                            <div class="d-flex align-items-center border rounded p-3 bg-white shadow-sm"
-                                style="border-left: 4px solid #6c757d !important;">
+                            <div class="d-flex align-items-center border rounded p-3 glass-task shadow-sm"
+                                style="border-left: 6px solid #ef4444 !important;">
 
                                 <!-- Checkbox -->
                                 <div class="mr-3">
@@ -67,32 +159,28 @@
                                     <span th:if="${tarea.fechaFinalizacion != null}" class="text-muted ml-2">
                                         <small>Vence: <span th:text="${tarea.fechaFinalizacion}"></span></small>
                                     </span>
-
-                                    <!-- Description (Optional, kept simple like list) -->
                                 </div>
 
                                 <div class="d-flex align-items-center">
-                                    <button type="submit" class="btn btn-sm btn-success"
+                                    <button type="submit" class="btn btn-sm shadow-sm"
                                         th:formaction="@{/tareas/{id}/restaurar(id=${tarea.id})}"
-                                        style="cursor: pointer;">Restaurar</button>
+                                        style="cursor: pointer; background-color: #10b981; color: white; border: none; border-radius: 9999px;">
+                                        <i class="fas fa-trash-restore"></i> Restaurar
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </form>
-                <p>
-                    <a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">Volver al
-                        listado</a>
-                </p>
             </div>
         </div>
 
         <div class="row mt-2">
             <div class="col">
-                <div class="alert alert-success alert-dismissible fade show" role="alert"
-                    th:if="${!#strings.isEmpty(mensaje)}">
+                <div class="alert alert-success alert-dismissible fade show shadow-sm glass-task" role="alert"
+                    th:if="${!#strings.isEmpty(mensaje)}" style="border-left: 4px solid #10b981;">
                     <span th:text="${mensaje}"></span>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <button type="button" class="close text-white" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
