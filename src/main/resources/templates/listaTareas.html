@@ -47,6 +47,7 @@
             letter-spacing: -0.025em;
             background: linear-gradient(to right, #ffffff, #94a3b8);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -55,11 +56,34 @@
             color: #e2e8f0;
         }
 
-        /* Light Mode Overrides (if body has 'light-theme' class - checking how navbar does it) 
-           Navbar.html usually toggles a class or sets a cookie. 
-           If the user wants strictly the Login style which is dark, I will stick to dark defaults.
-           But I should match standard Light Mode if the app supports it.
-        */
+        /* Inputs - Neumorphism/Dark Modern */
+        .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+            color: #e2e8f0 !important;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        /* Light Mode Inputs override */
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border: 1px solid #ced4da;
+            color: #495057 !important;
+        }
+
+
         /* Light Mode Overrides using data-bs-theme attribute */
         [data-bs-theme="light"] body {
             background-color: #F4F6F9;
@@ -152,7 +176,7 @@
 
         <div class="d-flex align-items-center border rounded p-3"
             th:classappend="${level == 0 ? 'glass-task shadow-sm' : 'glass-task-sub'}"
-            th:style="|border-left: 4px solid #6c757d !important; margin-left: ${level * 20}px;|">
+            th:style="|border-left: 6px solid ${taskItem.vencida ? '#ef4444' : (taskItem.porVencer ? '#f97316' : '#6c757d')} !important; margin-left: ${level * 20}px;|">
 
             <div class="mr-4 drag-handle" style="cursor: move; opacity: 0.5; padding-right: 20px;">
                 <span style="font-size: 1.5em;">☰</span>
@@ -217,17 +241,18 @@
             </div>
         </div>
 
-        <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded bg-white shadow-sm"
-            th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #28a745 !important;|">
+        <div th:id="'form-sub-' + ${taskItem?.id}" class="mt-2 p-3 border rounded glass-task-sub shadow-sm"
+            th:style="|display: none; margin-left: ${(level * 20) + 40}px; border-left: 4px solid #10b981 !important;|">
 
             <form th:action="@{/tareas/{id}/subtareas/nueva(id=${taskItem?.id})}" method="post" class="form-inline">
-                <span class="mr-2 text-success font-weight-bold">↳ Nueva subtarea:</span>
+                <span class="mr-2 font-weight-bold" style="color: #10b981;">↳ Nueva subtarea:</span>
 
-                <input type="text" name="titulo" class="form-control form-control-sm mr-2 flex-grow-1"
+                <input type="text" name="titulo" class="form-control form-control-sm mr-4 flex-grow-1"
                     placeholder="Título..." required>
 
-                <button type="submit" class="btn btn-sm btn-success">Guardar</button>
-                <button type="button" class="btn btn-sm btn-secondary ml-1"
+                <button type="submit" class="btn btn-sm shadow-sm"
+                    style="background-color: #10b981; color: white; border: none;">Guardar</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary ml-1"
                     th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'none\''">Cancelar</button>
             </form>
         </div>

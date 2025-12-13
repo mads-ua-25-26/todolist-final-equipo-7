@@ -214,6 +214,16 @@ public class Tarea implements Serializable {
                 Objects.equals(usuario, tarea.usuario);
     }
 
+    @Transient
+    public boolean isVencida() {
+        return fechaFinalizacion != null && !fechaFinalizacion.isAfter(LocalDate.now());
+    }
+
+    @Transient
+    public boolean isPorVencer() {
+        return fechaFinalizacion != null && fechaFinalizacion.isEqual(LocalDate.now().plusDays(1));
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(titulo, usuario);

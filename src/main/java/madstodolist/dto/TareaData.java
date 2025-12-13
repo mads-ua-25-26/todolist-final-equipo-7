@@ -110,6 +110,14 @@ public class TareaData implements Serializable {
         this.completada = completada;
     }
 
+    public boolean isVencida() {
+        return fechaFinalizacion != null && !fechaFinalizacion.isAfter(java.time.LocalDate.now());
+    }
+
+    public boolean isPorVencer() {
+        return fechaFinalizacion != null && fechaFinalizacion.isEqual(java.time.LocalDate.now().plusDays(1));
+    }
+
     // Método auxiliar para verificar si es una tarea raíz
     public boolean esRaiz() {
         return tareaPadreId == null;
