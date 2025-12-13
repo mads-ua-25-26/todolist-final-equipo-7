@@ -50,4 +50,11 @@ public class AcercaDeWebTest {
                                 .andExpect(status().isOk())
                                 .andExpect(content().string(containsString("Deja de olvidar cosas")));
         }
+
+        @Test
+        public void getAboutPageContainsAboutLink() throws Exception {
+                this.mockMvc.perform(get("/about"))
+                                .andExpect(status().isOk())
+                                .andExpect(content().string(containsString("href=\"/about\"")));
+        }
 }

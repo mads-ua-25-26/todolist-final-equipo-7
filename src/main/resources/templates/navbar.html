@@ -144,6 +144,9 @@
         <li th:if="${isLoggedIn and usuarioId != null}" class="nav-item">
           <a class="nav-link" th:href="@{/equipos}">Equipos</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/about}">Acerca de</a>
+        </li>
 
         <li th:if="${isLoggedIn}" class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
