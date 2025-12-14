@@ -1,49 +1,186 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Usuarios del Equipo')"></head>
+<head>
+    <th:block th:replace="fragments :: head (titulo='Usuarios del Equipo')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base (Modo Oscuro por defecto) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Títulos */
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle-gradient {
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        /* Tabla Personalizada */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #e2e8f0;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .custom-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Link de volver */
+        .text-emerald {
+            color: #10b981;
+            font-weight: 600;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+
+        .text-emerald:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        /* MODO CLARO (Sobreescritura) */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .custom-table th {
+            color: #64748b;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        [data-bs-theme="light"] .custom-table td {
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        [data-bs-theme="light"] .custom-table tr:hover td {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
 
 <body>
 <div th:replace="~{navbar}"></div>
 
-<div class="container-fluid">
-  <div class="row mt-3">
-    <div class="col">
-      <h2 th:text="'Usuarios del equipo: ' + ${equipo.nombre}"></h2>
-    </div>
-  </div>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
 
-  <div class="row mt-3">
-    <div class="col">
-      <table class="table table-striped">
-        <thead>
-        <tr>
-          <th>Id</th>
-          <th>Nombre</th>
-          <th>Email</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="usuario: ${usuarios}">
-          <td th:text="${usuario.id}"></td>
-          <td th:text="${usuario.nombre}"></td>
-          <td th:text="${usuario.email}"></td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(usuarios)}">
-          <td colspan="3" class="text-center">
-            No hay usuarios en este equipo
-          </td>
-        </tr>
-        </tbody>
-      </table>
-      <p>
-        <a class="btn btn-secondary" th:href="@{/equipos}">Volver a equipos</a>
-      </p>
+            <h2>Miembros del equipo</h2>
+            <p class="text-center mb-4" style="font-size: 1.2rem;">
+                <span class="subtitle-gradient" th:text="${equipo.nombre}">Nombre Equipo</span>
+            </p>
+
+            <div class="glass-card p-0">
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                        <tr>
+                            <th style="padding-left: 2rem;">ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="usuario: ${usuarios}">
+                            <td style="padding-left: 2rem;" class="font-weight-bold" th:text="'#' + ${usuario.id}"></td>
+                            <td th:text="${usuario.nombre}"></td>
+                            <td th:text="${usuario.email}" class="text-muted"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${#lists.isEmpty(usuarios)}" class="empty-state">
+                    <i class="fas fa-users-slash fa-3x mb-3" style="opacity: 0.3;"></i>
+                    <p>No hay usuarios asignados a este equipo.</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="/equipos" class="text-emerald">
+                    <i class="fas fa-arrow-left"></i> Volver a Equipos
+                </a>
+            </div>
+
+        </div>
     </div>
-  </div>
 </div>
 
-<div th:replace="fragments::javascript"/>
-
+<div th:replace="fragments::javascript"></div>
 </body>
 </html>
