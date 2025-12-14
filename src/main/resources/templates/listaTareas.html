@@ -176,7 +176,7 @@
 
         <div class="d-flex align-items-center border rounded p-3"
             th:classappend="${level == 0 ? 'glass-task shadow-sm' : 'glass-task-sub'}"
-            th:style="|border-left: 6px solid ${taskItem.vencida ? '#ef4444' : (taskItem.porVencer ? '#f97316' : '#6c757d')} !important; margin-left: ${level * 20}px;|">
+            th:style="|border-left: 6px solid ${taskItem.completada ? '#10b981' : (taskItem.vencida ? '#ef4444' : (taskItem.porVencer ? '#f97316' : '#6c757d'))} !important; margin-left: ${level * 20}px;|">
 
             <div class="mr-4 drag-handle" style="cursor: move; opacity: 0.5; padding-right: 20px;">
                 <span style="font-size: 1.5em;">☰</span>
@@ -188,7 +188,7 @@
 
                 <div class="d-block mb-1">
                     <span th:class="${level == 0 ? 'h5 font-weight-bold' : 'font-weight-normal'}"
-                        th:style="${esListadoCompletadas == true ? 'text-decoration: line-through;' : ''}"
+                        th:style="${(esListadoCompletadas == true or taskItem.completada) ? 'text-decoration: line-through;' : ''}"
                         th:text="'Tarea: ' + ${taskItem?.titulo}"></span>
                 </div>
 
@@ -196,39 +196,39 @@
                     th:if="${taskItem?.descripcion != null and !#strings.isEmpty(taskItem.descripcion)}"
                     th:text="'Descripción: ' + ${taskItem.descripcion}"></p>
 
-                <!-- Etiquetas -->
                 <span th:each="etiqueta : ${taskItem?.etiquetas}" class="badge badge-pill ml-1"
                     th:text="${etiqueta.nombre}"
                     th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
                 </span>
 
-                <!-- Fecha de finalización -->
                 <span th:if="${taskItem?.fechaFinalizacion != null}" class="text-muted ml-2">
-                    <small>Vence: <span th:text="${taskItem.fechaFinalizacion}"></span></small>
+                    <small>Vence: <span
+                            th:text="${#temporals.format(taskItem.fechaFinalizacion, 'dd-MM-yyyy')}"></span></small>
                 </span>
             </div>
 
             <div class="d-flex align-items-center">
-                <button th:if="${esListadoCompletadas != true}" type="button" class="btn btn-link p-0 mr-2"
+                <button th:if="${esListadoCompletadas != true and !taskItem.completada}" type="button"
+                    class="btn btn-link p-0 mr-2"
                     th:onclick="'document.getElementById(\'form-sub-' + ${taskItem?.id} + '\').style.display = \'block\''"
                     title="Añadir subtarea">
                     <img th:src="@{/images/subtareas.png}" alt="Subtarea" width="40" height="40">
                 </button>
 
-                <a th:if="${esListadoCompletadas != true}" class="btn btn-link p-0 mr-2"
+                <a th:if="${esListadoCompletadas != true and !taskItem.completada}" class="btn btn-link p-0 mr-2"
                     th:href="@{/tareas/{id}/editar(id=${taskItem?.id})}" title="Editar">
                     <img th:src="@{/images/editar.png}" alt="Editar" width="40" height="40">
                 </a>
 
-                <!-- Botón Completada / Icono Completada -->
-                <form th:if="${esListadoCompletadas != true}" th:action="@{/tareas/{id}/completar(id=${taskItem?.id})}"
-                    method="post" style="display:inline;" class="mr-2">
+                <form th:if="${esListadoCompletadas != true and !taskItem.completada}"
+                    th:action="@{/tareas/{id}/completar(id=${taskItem?.id})}" method="post" style="display:inline;"
+                    class="mr-2">
                     <button type="submit" class="btn btn-link p-0" title="Marcar como completada">
                         <img th:src="@{/images/por-completar.png}" alt="Completar" width="40" height="40">
                     </button>
                 </form>
 
-                <span th:if="${esListadoCompletadas == true}" class="mr-2">
+                <span th:if="${esListadoCompletadas == true or taskItem.completada}" class="mr-2">
                     <img th:src="@{/images/subtarea-completada.png}" alt="Completada" width="40" height="40">
                 </span>
 

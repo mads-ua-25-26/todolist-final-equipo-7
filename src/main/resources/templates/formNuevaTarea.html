@@ -131,104 +131,109 @@
 
 <body>
 
-    <div th:replace="~{navbar}"></div>
+<div th:replace="~{navbar}"></div>
 
-    <div class="container mt-5 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-8">
-                <div class="glass-card p-5">
-                    <h2 class="text-center">Crear Nueva Tarea</h2>
-                    <h6 class="text-center text-muted mb-4" th:text="'Para usuario: ' + ${usuario.getNombre()}"></h6>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="glass-card p-5">
+                <h2 class="text-center">Crear Nueva Tarea</h2>
+                <h6 class="text-center text-muted mb-4" th:text="'Para usuario: ' + ${usuario.getNombre()}"></h6>
 
-                    <form method="post" th:action="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}"
-                        th:object="${tareaData}">
+                <form method="post" th:action="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}"
+                      th:object="${tareaData}">
 
-                        <div class="form-group mb-4">
-                            <label for="titulo">Título</label>
-                            <input class="form-control" id="titulo" name="titulo" type="text"
-                                placeholder="Ej: Comprar el pan" required th:field="*{titulo}" />
-                        </div>
+                    <div class="form-group mb-4">
+                        <label for="titulo">Título</label>
+                        <input class="form-control" id="titulo" name="titulo" type="text"
+                               placeholder="Ej: Comprar el pan" required th:field="*{titulo}" />
+                    </div>
 
-                        <div class="form-group mb-4">
-                            <label for="descripcion">Descripción</label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
-                                placeholder="Detalles adicionales..." th:field="*{descripcion}"></textarea>
-                        </div>
+                    <div class="form-group mb-4">
+                        <label for="fechaFinalizacion">Fecha de Vencimiento</label>
+                        <input class="form-control" id="fechaFinalizacion" name="fechaFinalizacion" type="date"
+                               th:field="*{fechaFinalizacion}" />
+                    </div>
 
-                        <div class="form-group mb-4">
-                            <label for="fechaFinalizacion">Fecha de Vencimiento</label>
-                            <input class="form-control" id="fechaFinalizacion" name="fechaFinalizacion" type="date"
-                                th:field="*{fechaFinalizacion}" />
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label for="select-etiquetas">Etiquetas</label>
-                            <select class="form-control" id="select-etiquetas" onchange="agregarEtiqueta(this)">
-                                <option value="" selected disabled>Añadir etiqueta...</option>
-                                <option th:each="etiqueta : ${etiquetas}" th:value="${etiqueta.id}"
+                    <div class="form-group mb-4">
+                        <label for="select-etiquetas">Etiquetas</label>
+                        <select class="form-control" id="select-etiquetas" onchange="agregarEtiqueta(this)">
+                            <option value="" selected disabled>Añadir etiqueta...</option>
+                            <option th:each="etiqueta : ${etiquetas}" th:value="${etiqueta.id}"
                                     th:text="${etiqueta.nombre}" th:data-color="${etiqueta.color}">
-                                </option>
-                            </select>
-                        </div>
+                            </option>
+                        </select>
+                    </div>
 
-                        <div id="etiquetas-seleccionadas" class="mb-4"></div>
+                    <div id="etiquetas-seleccionadas" class="mb-4"></div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-between align-items-center mt-5">
-                            <a class="text-emerald" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}"
-                                style="text-decoration: none;">
-                                <i class="fas fa-arrow-left"></i> Volver
-                            </a>
-                            <button class="btn btn-emerald shadow" type="submit">
-                                Crear Tarea
-                            </button>
-                        </div>
+                    <div class="form-group mb-4">
+                        <label for="descripcion">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
+                                  placeholder="Detalles adicionales..." th:field="*{descripcion}"></textarea>
+                    </div>
 
-                    </form>
-                </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between align-items-center mt-5">
+                        <a class="text-emerald" th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}"
+                           style="text-decoration: none;">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                        <button class="btn btn-emerald shadow" type="submit">
+                            Crear Tarea
+                        </button>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <div th:replace="fragments::javascript"></div>
+<div th:replace="fragments::javascript"></div>
 
-    <script>
-        const etiquetasSeleccionadas = new Set();
+<script>
+    const etiquetasSeleccionadas = new Set();
 
-        function agregarEtiqueta(select) {
-            const option = select.options[select.selectedIndex];
-            const id = option.value;
-            const nombre = option.text;
-            const color = option.getAttribute('data-color');
+    function agregarEtiqueta(select) {
+        const option = select.options[select.selectedIndex];
+        const id = option.value;
+        const nombre = option.text;
+        const color = option.getAttribute('data-color');
 
-            if (!id) return;
+        if (!id) return;
 
-            etiquetasSeleccionadas.add(id);
-
-            const container = document.getElementById('etiquetas-seleccionadas');
-            const badge = document.createElement('span');
-            badge.className = 'badge badge-pill mr-2 mb-2 p-2';
-            badge.style.backgroundColor = color;
-            badge.style.color = 'white';
-            badge.style.cursor = 'pointer';
-            badge.style.fontSize = '0.9em';
-            badge.innerHTML = `${nombre} &times;`;
-            badge.title = "Haz clic para eliminar";
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'etiquetaIds';
-            input.value = id;
-
-            badge.onclick = function () {
-                container.removeChild(badge);
-                etiquetasSeleccionadas.delete(id);
-            };
-
-            badge.appendChild(input);
-            container.appendChild(badge);
+        if (etiquetasSeleccionadas.has(id)) {
             select.value = "";
+            return;
         }
-    </script>
+
+        etiquetasSeleccionadas.add(id);
+
+        const container = document.getElementById('etiquetas-seleccionadas');
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-pill mr-2 mb-2 p-2';
+        badge.style.backgroundColor = color;
+        badge.style.color = 'white';
+        badge.style.cursor = 'pointer';
+        badge.style.fontSize = '0.9em';
+        badge.innerHTML = `${nombre} &times;`;
+        badge.title = "Haz clic para eliminar";
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'etiquetaIds';
+        input.value = id;
+
+        badge.onclick = function () {
+            container.removeChild(badge);
+            etiquetasSeleccionadas.delete(id);
+        };
+
+        badge.appendChild(input);
+        container.appendChild(badge);
+        select.value = "";
+    }
+</script>
 
 </body>
 

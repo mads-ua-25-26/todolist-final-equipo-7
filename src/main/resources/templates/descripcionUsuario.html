@@ -1,59 +1,176 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Descripción de Usuario</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <th:block th:replace="fragments :: head (titulo='Detalle Usuario')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base (Modo Oscuro por defecto) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Tarjeta con efecto cristal */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            color: white;
+            padding: 2.5rem;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        /* Etiquetas de los datos */
+        .info-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label i {
+            margin-right: 8px;
+            color: #10b981; /* Color Emerald */
+            opacity: 0.8;
+        }
+
+        /* Valor de los datos */
+        .info-value {
+            font-size: 1.1rem;
+            color: #f1f5f9;
+            font-weight: 400;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Link de volver */
+        .text-emerald {
+            color: #10b981;
+            font-weight: 600;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+
+        .text-emerald:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        /* MODO CLARO (Sobreescritura) */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .info-label {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .info-value {
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container mt-5">
-  <h1 class="mb-4">Descripción de Usuario</h1>
+<div th:replace="~{navbar}"></div>
 
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title mb-4">Datos del Usuario</h5>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
 
-      <div class="row mb-3">
-        <div class="col-md-3">
-          <strong>ID:</strong>
-        </div>
-        <div class="col-md-9">
-          <span th:text="${usuario.id}"></span>
-        </div>
-      </div>
+            <div class="glass-card">
+                <div class="text-center mb-4">
+                    <h2>Ficha de Usuario</h2>
+                </div>
 
-      <div class="row mb-3">
-        <div class="col-md-3">
-          <strong>Email:</strong>
-        </div>
-        <div class="col-md-9">
-          <span th:text="${usuario.email}"></span>
-        </div>
-      </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-group">
+                            <div class="info-label">
+                                <i class="fas fa-fingerprint"></i> ID de Usuario
+                            </div>
+                            <div class="info-value" th:text="'#' + ${usuario.id}"></div>
+                        </div>
+                    </div>
 
-      <div class="row mb-3">
-        <div class="col-md-3">
-          <strong>Nombre:</strong>
-        </div>
-        <div class="col-md-9">
-          <span th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}"></span>
-        </div>
-      </div>
+                    <div class="col-md-6">
+                        <div class="info-group">
+                            <div class="info-label">
+                                <i class="far fa-calendar-alt"></i> Fecha de Nacimiento
+                            </div>
+                            <div class="info-value"
+                                 th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}">
+                            </div>
+                        </div>
+                    </div>
 
-      <div class="row mb-3">
-        <div class="col-md-3">
-          <strong>Fecha de Nacimiento:</strong>
+                    <div class="col-md-6">
+                        <div class="info-group">
+                            <div class="info-label">
+                                <i class="fas fa-user"></i> Nombre Completo
+                            </div>
+                            <div class="info-value"
+                                 th:text="${usuario.nombre != null ? usuario.nombre : 'No especificado'}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-group">
+                            <div class="info-label">
+                                <i class="fas fa-envelope"></i> Correo Electrónico
+                            </div>
+                            <div class="info-value" th:text="${usuario.email}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <a href="/registrados" class="text-emerald">
+                        <i class="fas fa-arrow-left"></i> Volver al Listado
+                    </a>
+                </div>
+            </div>
+
         </div>
-        <div class="col-md-9">
-          <span th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'No especificada'}"></span>
-        </div>
-      </div>
     </div>
-  </div>
-
-  <div class="mt-3">
-    <a href="/registrados" class="btn btn-secondary">Volver al Listado</a>
-  </div>
 </div>
+
+<div th:replace="fragments::javascript"></div>
 </body>
 </html>

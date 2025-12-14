@@ -1,40 +1,170 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Crear Nuevo Equipo')"></head>
+<head>
+    <th:block th:replace="fragments :: head (titulo='Crear Nuevo Equipo')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base (Modo Oscuro por defecto) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Tarjeta con efecto cristal (Glassmorphism) */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            color: white;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Inputs modernos */
+        .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+            color: #e2e8f0 !important;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        /* Botones */
+        .btn-emerald {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 10px 24px;
+            transition: all 0.2s;
+        }
+
+        .btn-emerald:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        .text-emerald {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .text-emerald:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        /* MODO CLARO (Sobreescritura) */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] label {
+            color: #475569;
+        }
+
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border: 1px solid #ced4da;
+            color: #495057 !important;
+        }
+
+        [data-bs-theme="light"] .form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
 
 <body>
+
 <div th:replace="~{navbar}"></div>
 
-<div class="container-fluid">
-    <div class="row mt-3">
-        <div class="col">
-            <h2>Crear Nuevo Equipo</h2>
-        </div>
-    </div>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="glass-card p-5">
 
-    <div class="row mt-3">
-        <div class="col">
-            <form method="post" th:action="@{/equipos/nuevo}" th:object="${equipo}">
-                <div class="form-group">
-                    <label for="nombre">Nombre del equipo:</label>
-                    <input type="text"
-                           class="form-control"
-                           id="nombre"
-                           name="nombre"
-                           th:field="*{nombre}"
-                           required
-                           placeholder="Introduce el nombre del equipo"/>
-                </div>
+                <h2 class="text-center">Crear Nuevo Equipo</h2>
 
-                <button type="submit" class="btn btn-primary">Crear Equipo</button>
-                <a class="btn btn-secondary" th:href="@{/equipos}">Cancelar</a>
-            </form>
+                <form method="post" th:action="@{/equipos/nuevo}" th:object="${equipo}">
+
+                    <div class="form-group mb-4">
+                        <label for="nombre">Nombre del equipo</label>
+                        <input type="text"
+                               class="form-control"
+                               id="nombre"
+                               name="nombre"
+                               th:field="*{nombre}"
+                               placeholder="Introduce el nombre del equipo"
+                               required>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between align-items-center mt-5">
+                        <a class="text-emerald" th:href="@{/equipos}" style="text-decoration: none;">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-emerald shadow">
+                            Crear Equipo
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<div th:replace="fragments::javascript"/>
+<div th:replace="fragments::javascript"></div>
 
 </body>
 </html>
