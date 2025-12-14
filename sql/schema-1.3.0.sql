@@ -68,6 +68,41 @@ ALTER SEQUENCE public.equipos_id_seq OWNED BY public.equipos.id;
 
 
 --
+-- Name: etiquetas; Type: TABLE; Schema: public; Owner: mads
+--
+
+CREATE TABLE public.etiquetas (
+    id bigint NOT NULL,
+    nombre character varying(255) NOT NULL,
+    color character varying(255) NOT NULL,
+    usuario_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.etiquetas OWNER TO mads;
+
+--
+-- Name: etiquetas_id_seq; Type: SEQUENCE; Schema: public; Owner: mads
+--
+
+CREATE SEQUENCE public.etiquetas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.etiquetas_id_seq OWNER TO mads;
+
+--
+-- Name: etiquetas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mads
+--
+
+ALTER SEQUENCE public.etiquetas_id_seq OWNED BY public.etiquetas.id;
+
+
+--
 -- Name: tareas; Type: TABLE; Schema: public; Owner: mads
 --
 
@@ -75,7 +110,12 @@ CREATE TABLE public.tareas (
     id bigint NOT NULL,
     titulo character varying(255) NOT NULL,
     usuario_id bigint NOT NULL,
-    descripcion character varying(255)
+    descripcion character varying(255),
+    position integer,
+    fecha_finalizacion date,
+    visible boolean NOT NULL DEFAULT true,
+    completada boolean NOT NULL DEFAULT false,
+    tarea_padre_id bigint
 );
 
 
@@ -101,6 +141,18 @@ ALTER TABLE public.tareas_id_seq OWNER TO mads;
 
 ALTER SEQUENCE public.tareas_id_seq OWNED BY public.tareas.id;
 
+
+--
+-- Name: tarea_etiquetas; Type: TABLE; Schema: public; Owner: mads
+--
+
+CREATE TABLE public.tarea_etiquetas (
+    tarea_id bigint NOT NULL,
+    etiqueta_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.tarea_etiquetas OWNER TO mads;
 
 --
 -- Name: usuarios; Type: TABLE; Schema: public; Owner: mads
@@ -147,6 +199,13 @@ ALTER TABLE ONLY public.equipos ALTER COLUMN id SET DEFAULT nextval('public.equi
 
 
 --
+-- Name: etiquetas id; Type: DEFAULT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.etiquetas ALTER COLUMN id SET DEFAULT nextval('public.etiquetas_id_seq'::regclass);
+
+
+--
 -- Name: tareas id; Type: DEFAULT; Schema: public; Owner: mads
 --
 
@@ -177,11 +236,27 @@ ALTER TABLE ONLY public.equipos
 
 
 --
+-- Name: etiquetas etiquetas_pkey; Type: CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.etiquetas
+    ADD CONSTRAINT etiquetas_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tareas tareas_pkey; Type: CONSTRAINT; Schema: public; Owner: mads
 --
 
 ALTER TABLE ONLY public.tareas
     ADD CONSTRAINT tareas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tarea_etiquetas tarea_etiquetas_pkey; Type: CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.tarea_etiquetas
+    ADD CONSTRAINT tarea_etiquetas_pkey PRIMARY KEY (tarea_id, etiqueta_id);
 
 
 --
@@ -198,6 +273,38 @@ ALTER TABLE ONLY public.usuarios
 
 ALTER TABLE ONLY public.tareas
     ADD CONSTRAINT fkdmoaxl7yv4q6vkc9h32wvbddr FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: tareas fk_tarea_padre; Type: FK CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.tareas
+    ADD CONSTRAINT fk_tarea_padre FOREIGN KEY (tarea_padre_id) REFERENCES public.tareas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: etiquetas fk_etiqueta_usuario; Type: FK CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.etiquetas
+    ADD CONSTRAINT fk_etiqueta_usuario FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tarea_etiquetas fk_tarea_etiquetas_tarea; Type: FK CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.tarea_etiquetas
+    ADD CONSTRAINT fk_tarea_etiquetas_tarea FOREIGN KEY (tarea_id) REFERENCES public.tareas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tarea_etiquetas fk_tarea_etiquetas_etiqueta; Type: FK CONSTRAINT; Schema: public; Owner: mads
+--
+
+ALTER TABLE ONLY public.tarea_etiquetas
+    ADD CONSTRAINT fk_tarea_etiquetas_etiqueta FOREIGN KEY (etiqueta_id) REFERENCES public.etiquetas(id) ON DELETE CASCADE;
 
 
 --
