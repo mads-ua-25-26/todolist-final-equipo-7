@@ -116,6 +116,24 @@ public class TareaService {
                 .collect(Collectors.toList());
     }
 
+    // Verificar si una tarea puede restaurarse
+    @Transactional(readOnly = true)
+    public boolean puedeRestaurarse(Long idTarea) {
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        if (tarea == null) {
+            return false;
+        }
+
+        // Si es una subtarea, verificar que su padre no esté borrado
+        if (tarea.getTareaPadre() != null) {
+            Tarea padre = tarea.getTareaPadre();
+            return padre.getVisible(); // Solo puede restaurarse si el padre está visible
+        }
+
+        // Si es una tarea raíz, siempre puede restaurarse
+        return true;
+    }
+
     // Listar tareas raíz de un usuario filtrando por estado (completadas o
     // pendientes)
     @Transactional(readOnly = true)
@@ -150,6 +168,7 @@ public class TareaService {
                 .orElseThrow(() -> new TareaServiceException("Tarea no encontrada"));
 
         return tarea.getSubtareas().stream()
+                .filter(subtarea -> subtarea.getVisible()) // Solo incluir subtareas visibles
                 .sorted((a, b) -> a.getId().compareTo(b.getId()))
                 .map(this::convertirATareaData)
                 .collect(Collectors.toList());
@@ -206,6 +225,14 @@ public class TareaService {
             throw new TareaServiceException("No existe tarea con id " + idTarea);
         }
 
+        // Si es una subtarea, verificar que su padre no esté borrado
+        if (tarea.getTareaPadre() != null) {
+            Tarea padre = tarea.getTareaPadre();
+            if (!padre.getVisible()) {
+                throw new TareaServiceException("No se puede restaurar la subtarea porque su tarea padre está borrada. Restaure primero la tarea padre.");
+            }
+        }
+
         // Restaurar: marcamos como visible
         tarea.setVisible(true);
         tareaRepository.save(tarea);
@@ -213,6 +240,19 @@ public class TareaService {
 
     @Transactional
     public void restaurarTareas(List<Long> idsTareas) {
+        // Filtrar las tareas que no pueden restaurarse
+        List<Long> tareasNoRestaurables = new ArrayList<>();
+        for (Long id : idsTareas) {
+            if (!puedeRestaurarse(id)) {
+                tareasNoRestaurables.add(id);
+            }
+        }
+        
+        if (!tareasNoRestaurables.isEmpty()) {
+            throw new TareaServiceException("No se pueden restaurar algunas tareas porque sus tareas padre están borradas. Restaure primero las tareas padre.");
+        }
+        
+        // Restaurar todas las tareas que pueden restaurarse
         for (Long id : idsTareas) {
             restaurarTarea(id);
         }
@@ -221,11 +261,33 @@ public class TareaService {
     @Transactional
     public void borrarTareasDefinitivamente(List<Long> idsTareas) {
         for (Long id : idsTareas) {
-            logger.debug("Borrando definitivamente tarea " + id);
-            if (tareaRepository.existsById(id)) {
-                tareaRepository.deleteById(id);
+            borrarTareaDefinitivamente(id);
+        }
+    }
+
+    @Transactional
+    private void borrarTareaDefinitivamente(Long idTarea) {
+        logger.debug("Borrando definitivamente tarea " + idTarea);
+        Tarea tarea = tareaRepository.findById(idTarea).orElse(null);
+        if (tarea == null) {
+            return; // La tarea ya no existe
+        }
+
+        // Si tiene subtareas, borrarlas recursivamente primero
+        if (tarea.getSubtareas() != null && !tarea.getSubtareas().isEmpty()) {
+            // Crear una copia de la lista para evitar problemas de modificación durante la iteración
+            List<Long> idsSubtareas = tarea.getSubtareas().stream()
+                    .map(Tarea::getId)
+                    .collect(Collectors.toList());
+            
+            // Borrar cada subtarea recursivamente
+            for (Long idSubtarea : idsSubtareas) {
+                borrarTareaDefinitivamente(idSubtarea);
             }
         }
+
+        // Borrar la tarea (esto también borrará las subtareas restantes por cascade)
+        tareaRepository.delete(tarea);
     }
 
     @Transactional(readOnly = true)
@@ -347,9 +409,10 @@ public class TareaService {
         tareaData.setEtiquetas(tarea.getEtiquetas());
         tareaData.setCompletada(tarea.getCompletada());
 
-        // Convertir subtareas recursivamente
+        // Convertir subtareas recursivamente (solo las visibles)
         if (tarea.getSubtareas() != null && !tarea.getSubtareas().isEmpty()) {
             List<TareaData> subtareasData = tarea.getSubtareas().stream()
+                    .filter(subtarea -> subtarea.getVisible()) // Solo incluir subtareas visibles
                     .sorted((a, b) -> a.getId().compareTo(b.getId()))
                     .map(this::convertirATareaData)
                     .collect(Collectors.toList());

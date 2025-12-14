@@ -218,9 +218,16 @@ public class TareaController {
         UsuarioData usuario = usuarioService.findById(idUsuario);
 
         List<TareaData> tareas = tareaService.allTareasBorradasUsuario(idUsuario);
+        
+        // Crear un mapa que indique si cada tarea puede restaurarse
+        Map<Long, Boolean> puedeRestaurarseMap = new HashMap<>();
+        for (TareaData tarea : tareas) {
+            puedeRestaurarseMap.put(tarea.getId(), tareaService.puedeRestaurarse(tarea.getId()));
+        }
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("tareas", tareas);
+        model.addAttribute("puedeRestaurarseMap", puedeRestaurarseMap);
         // Usaremos una nueva plantilla 'tareasBorradas'
         return "tareasBorradas";
     }
@@ -234,8 +241,12 @@ public class TareaController {
         }
         comprobarUsuarioLogeado(tarea.getUsuarioId());
 
-        tareaService.restaurarTarea(idTarea);
-        flash.addFlashAttribute("mensaje", "Tarea restaurada correctamente");
+        try {
+            tareaService.restaurarTarea(idTarea);
+            flash.addFlashAttribute("mensaje", "Tarea restaurada correctamente");
+        } catch (TareaServiceException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
 
         return "redirect:/usuarios/" + tarea.getUsuarioId() + "/tareas/borradas";
     }
@@ -251,8 +262,12 @@ public class TareaController {
         TareaData primera = tareaService.findById(ids.get(0));
         if (primera != null) {
             comprobarUsuarioLogeado(primera.getUsuarioId());
-            tareaService.restaurarTareas(ids);
-            flash.addFlashAttribute("mensaje", "Tareas restauradas correctamente");
+            try {
+                tareaService.restaurarTareas(ids);
+                flash.addFlashAttribute("mensaje", "Tareas restauradas correctamente");
+            } catch (TareaServiceException e) {
+                flash.addFlashAttribute("error", e.getMessage());
+            }
             return "redirect:/usuarios/" + primera.getUsuarioId() + "/tareas/borradas";
         }
         return "redirect:/login";
