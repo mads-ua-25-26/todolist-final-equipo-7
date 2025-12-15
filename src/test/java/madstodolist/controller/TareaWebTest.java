@@ -154,7 +154,7 @@ public class TareaWebTest {
 
                 this.mockMvc.perform(get(urlRedirect))
                                 .andExpect(content().string(containsString("Limpiar cristales coche")))
-                                .andExpect(content().string(containsString("2023-12-31")));
+                                .andExpect(content().string(containsString("31-12-2023")));
         }
 
         @Test
