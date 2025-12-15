@@ -1,57 +1,253 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments :: head (titulo='Listado de Equipos')"></head>
+
+<head>
+    <th:block th:replace="fragments :: head (titulo='Listado de Equipos')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base (Modo Oscuro por defecto) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Títulos */
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        /* Tabla Personalizada */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #e2e8f0;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .custom-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Botón Crear */
+        .btn-emerald {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 10px 24px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-emerald:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        /* Botones de acción con texto */
+        .btn-text-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 16px;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none !important;
+            margin-right: 8px;
+            border: 1px solid transparent;
+        }
+
+        /* Estilo Unirse (Verde) */
+        .btn-join {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .btn-join:hover {
+            background-color: #10b981;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Estilo Salir (Rojo) */
+        .btn-leave {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .btn-leave:hover {
+            background-color: #ef4444;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Botón Editar pequeño (Amarillo) */
+        .btn-icon-warning {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            transition: all 0.2s;
+            text-decoration: none !important;
+        }
+        .btn-icon-warning:hover {
+            background: #f59e0b;
+            color: white;
+        }
+
+        /* Links */
+        .text-emerald {
+            color: #10b981;
+            font-weight: 600;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+        .text-emerald:hover { color: #059669; text-decoration: underline; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        /* MODO CLARO (Sobreescritura) */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+        [data-bs-theme="light"] h2 { background: none; -webkit-text-fill-color: initial; color: #0f172a; }
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+        [data-bs-theme="light"] .custom-table th { color: #64748b; border-bottom: 1px solid #cbd5e1; }
+        [data-bs-theme="light"] .custom-table td { border-bottom: 1px solid #e2e8f0; color: #334155; }
+        [data-bs-theme="light"] .custom-table tr:hover td { background-color: rgba(0, 0, 0, 0.02); }
+    </style>
+</head>
 
 <body>
 <div th:replace="~{navbar}"></div>
 
-<div class="container-fluid">
-    <div class="row mt-3">
-        <div class="col">
-            <h2>Listado de Equipos</h2>
-            <p>
-                <a class="btn btn-primary" th:href="@{/equipos/nuevo}">Crear nuevo equipo</a>
-            </p>
-        </div>
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 px-1">
+        <h2>Listado de Equipos</h2>
+        <a class="btn-emerald shadow" th:href="@{/equipos/nuevo}">
+            <i class="fas fa-plus"></i> Nuevo Equipo
+        </a>
     </div>
 
-    <div class="row mt-3">
-        <div class="col">
-            <table class="table table-striped">
+    <div class="glass-card p-0">
+        <div class="table-responsive">
+            <table class="custom-table">
                 <thead>
                 <tr>
-                    <th>Id</th>
-                    <th>Nombre</th>
-                    <th>Acción</th>
+                    <th style="padding-left: 2rem;">ID</th>
+                    <th>Nombre del Equipo</th>
+                    <th style="text-align: right; padding-right: 2rem;">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="equipo: ${equipos}">
-                    <td th:text="${equipo.id}"></td>
+                    <td style="padding-left: 2rem;" class="font-weight-bold" th:text="'#' + ${equipo.id}"></td>
+
                     <td>
-                        <!-- El nombre ahora es un enlace -->
                         <a th:href="@{/equipos/{id}/usuarios(id=${equipo.id})}"
-                           th:text="${equipo.nombre}"></a>
+                           th:text="${equipo.nombre}"
+                           class="text-emerald">
+                        </a>
                     </td>
-                    <td>
-                        <a class="btn btn-primary btn-xs"
-                           th:href="@{/equipos/{id}/usuarios(id=${equipo.id})}">Ver Usuarios</a>
-                        <a class="btn btn-success btn-xs"
-                           th:href="@{/equipos/{idEquipo}/usuarios/{idUsuario}/agregar(idEquipo=${equipo.id},idUsuario=${usuario.id})}">Unirse</a>
-                        <a class="btn btn-danger btn-xs"
-                           th:href="@{/equipos/{idEquipo}/usuarios/{idUsuario}/eliminar(idEquipo=${equipo.id},idUsuario=${usuario.id})}">Eliminar</a>
-                        <a class="btn btn-warning btn-xs"
+
+                    <td style="text-align: right; padding-right: 2rem;">
+
+                        <a class="btn-text-action btn-join"
+                           th:href="@{/equipos/{idEquipo}/usuarios/{idUsuario}/agregar(idEquipo=${equipo.id},idUsuario=${usuario.id})}">
+                            <i class="fas fa-user-plus mr-1"></i> Unirse
+                        </a>
+
+                        <a class="btn-text-action btn-leave"
+                           th:href="@{/equipos/{idEquipo}/usuarios/{idUsuario}/eliminar(idEquipo=${equipo.id},idUsuario=${usuario.id})}"
+                           onclick="return confirm('¿Seguro que quieres salir de este equipo?')">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                        </a>
+
+                        <a class="btn-icon-warning"
                            th:if="${usuario.admin}"
-                           th:href="@{/equipos/{idEquipo}/editar(idEquipo=${equipo.id})}">Editar</a>
+                           th:href="@{/equipos/{idEquipo}/editar(idEquipo=${equipo.id})}"
+                           title="Editar equipo">
+                            <i class="fas fa-edit"></i>
+                        </a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <div th:if="${#lists.isEmpty(equipos)}" class="empty-state">
+            <i class="fas fa-layer-group fa-3x mb-3" style="opacity: 0.3;"></i>
+            <p>No hay equipos creados todavía.</p>
+        </div>
     </div>
 </div>
 
-<div th:replace="fragments::javascript"/>
-
+<div th:replace="fragments::javascript"></div>
 </body>
 </html>

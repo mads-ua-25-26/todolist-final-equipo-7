@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MADS TodoList - Gestión Avanzada de Tareas y Equipos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-pattern {
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-50 hero-pattern min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="w-full py-6 px-8 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                <i data-lucide="check-square" class="text-white w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xl font-bold tracking-tight">MADS TodoList</span>
+                <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full ml-2">v1.4.0</span>
+            </div>
+        </div>
+        <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+            <a href="#features" class="hover:text-white transition">Funcionalidades</a>
+            <a href="#benefits" class="hover:text-white transition">Beneficios</a>
+            <a href="#tech" class="hover:text-white transition">Tecnología</a>
+        </div>
+        <div class="flex gap-3">
+            <a href="/login"
+                class="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg text-sm font-medium transition">
+                Iniciar Sesión
+            </a>
+            <a href="/registro"
+                class="gradient-bg px-4 py-2 rounded-lg text-sm font-medium transition hover:shadow-lg hover:shadow-purple-500/20">
+                Registrarse
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="flex-grow flex flex-col justify-center items-center text-center px-4 py-20 relative overflow-hidden">
+
+        <!-- Background Blur Effect -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[120px] -z-10">
+        </div>
+        <div
+            class="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -z-10">
+        </div>
+
+        <div
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-semibold mb-8">
+            <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+            </span>
+            Sistema completo de gestión de tareas y equipos
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-5xl leading-tight">
+            Organiza tus tareas, <br>
+            colabora en <span class="gradient-text">equipo</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-slate-400 max-w-3xl mb-10 leading-relaxed">
+            Gestiona tareas con <strong>subtareas jerárquicas</strong>, organiza con <strong>etiquetas de colores</strong>,
+            trabaja en <strong>equipos colaborativos</strong> y controla fechas límite.
+            Todo en una interfaz moderna y potente.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <a href="/login"
+                class="gradient-bg text-white px-8 py-4 rounded-xl font-bold transition shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 flex items-center justify-center gap-2">
+                <i data-lucide="rocket" class="w-5 h-5"></i> Comenzar Ahora
+            </a>
+            <a href="#features"
+                class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-8 py-4 rounded-xl font-medium transition flex items-center justify-center gap-2">
+                <i data-lucide="info" class="w-5 h-5"></i> Ver Características
+            </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex flex-wrap justify-center gap-8 mt-12 text-sm">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                <span class="text-slate-400">Gestión de Tareas Completa</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                <span class="text-slate-400">Trabajo en Equipo</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-purple-400"></div>
+                <span class="text-slate-400">Sistema de Etiquetas</span>
+            </div>
+        </div>
+
+        <!-- Mockup / Visual Representation -->
+        <div class="mt-20 w-full max-w-6xl relative group">
+            <div
+                class="absolute -inset-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 rounded-3xl blur-lg opacity-25 group-hover:opacity-50 transition duration-1000 animate-pulse">
+            </div>
+            <div class="relative glass-card rounded-2xl p-6 border border-slate-700/50">
+                <!-- Browser Header -->
+                <div class="flex items-center gap-3 mb-6 px-3">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/70"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/70"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/70"></div>
+                    </div>
+                    <div
+                        class="flex-1 bg-slate-800/70 rounded-lg h-8 mx-4 px-4 text-xs flex items-center text-slate-400">
+                        <i data-lucide="lock" class="w-3 h-3 mr-2"></i>
+                        localhost:8080/tareas
+                    </div>
+                    <div class="flex gap-2">
+                        <i data-lucide="user-circle" class="w-5 h-5 text-slate-500"></i>
+                    </div>
+                </div>
+
+                <!-- UI Simulation -->
+                <div class="bg-slate-900 rounded-xl h-[500px] flex overflow-hidden relative shadow-2xl">
+                    <!-- Sidebar -->
+                    <div class="w-72 bg-slate-800/50 border-r border-slate-700/50 p-6 hidden lg:block">
+                        <div class="space-y-6">
+                            <!-- User Section -->
+                            <div class="flex items-center gap-3 pb-4 border-b border-slate-700/50">
+                                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                    <i data-lucide="user" class="w-5 h-5 text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-sm">Usuario Demo</div>
+                                    <div class="text-xs text-slate-500">admin@mads.com</div>
+                                </div>
+                            </div>
+
+                            <!-- Navigation -->
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                                    <span class="text-sm font-medium">Mis Tareas</span>
+                                    <span class="ml-auto text-xs bg-purple-500/20 px-2 py-0.5 rounded-full">14</span>
+                                </div>
+                                <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700/30 transition">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                    <span class="text-sm">Equipos</span>
+                                    <span class="ml-auto text-xs bg-slate-700/50 px-2 py-0.5 rounded-full">3</span>
+                                </div>
+                                <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700/30 transition">
+                                    <i data-lucide="tags" class="w-4 h-4"></i>
+                                    <span class="text-sm">Etiquetas</span>
+                                    <span class="ml-auto text-xs bg-slate-700/50 px-2 py-0.5 rounded-full">15</span>
+                                </div>
+                            </div>
+
+                            <!-- Teams Section -->
+                            <div class="pt-4 border-t border-slate-700/50">
+                                <div class="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">Mis Equipos</div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-sm text-slate-300">
+                                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                        <span>Desarrollo Backend</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm text-slate-300">
+                                        <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                                        <span>Frontend Team</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="flex-1 p-8 overflow-y-auto">
+                        <div class="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Mis Tareas</h3>
+                                <p class="text-sm text-slate-400">Gestiona tus tareas y subtareas</p>
+                            </div>
+                            <button
+                                class="gradient-bg px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transition">
+                                <i data-lucide="plus" class="w-4 h-4"></i> Nueva Tarea
+                            </button>
+                        </div>
+
+                        <!-- Task Items -->
+                        <div class="space-y-4">
+                            <!-- Task 1: Con subtareas -->
+                            <div class="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden hover:border-purple-500/30 transition">
+                                <div class="p-4 border-l-4 border-purple-500">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start gap-3 flex-1">
+                                            <div class="mt-1">
+                                                <div class="w-5 h-5 rounded border-2 border-slate-500 hover:border-purple-400 transition cursor-pointer"></div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <h4 class="font-medium">Migrar base de datos</h4>
+                                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+                                                        Urgente
+                                                    </span>
+                                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background-color: #32CD32; background-color: rgba(50, 205, 50, 0.2); color: #90EE90; border: 1px solid rgba(50, 205, 50, 0.3);">
+                                                        Código
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-slate-400 mb-3">Migrar de MySQL a PostgreSQL</p>
+
+                                                <!-- Subtareas -->
+                                                <div class="space-y-2 ml-6 border-l-2 border-slate-700 pl-4">
+                                                    <div class="flex items-center gap-2 text-sm">
+                                                        <div class="w-4 h-4 rounded border border-green-500 bg-green-500/20 flex items-center justify-center">
+                                                            <i data-lucide="check" class="w-3 h-3 text-green-400"></i>
+                                                        </div>
+                                                        <span class="line-through text-slate-500">Backup de datos</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2 text-sm">
+                                                        <div class="w-4 h-4 rounded border border-slate-500"></div>
+                                                        <span class="text-slate-300">Crear scripts migración</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 text-xs text-slate-400">
+                                            <div class="flex items-center gap-1">
+                                                <i data-lucide="calendar" class="w-3 h-3"></i>
+                                                <span>15 Ene</span>
+                                            </div>
+                                            <i data-lucide="grip-vertical" class="text-slate-600 w-4 h-4 cursor-move"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 2: Completada -->
+                            <div class="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden opacity-60">
+                                <div class="p-4 border-l-4 border-green-500">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start gap-3 flex-1">
+                                            <div class="mt-1">
+                                                <div class="w-5 h-5 rounded border-2 border-green-500 bg-green-500/20 flex items-center justify-center">
+                                                    <i data-lucide="check" class="w-3 h-3 text-green-400"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h4 class="font-medium line-through text-slate-500">Corregir bug en producción</h4>
+                                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/20 text-green-300">
+                                                        Completada
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 3: Normal -->
+                            <div class="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden hover:border-blue-500/30 transition">
+                                <div class="p-4 border-l-4 border-blue-500">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start gap-3 flex-1">
+                                            <div class="mt-1">
+                                                <div class="w-5 h-5 rounded border-2 border-slate-500 hover:border-blue-400 transition cursor-pointer"></div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <h4 class="font-medium">Rediseñar interfaz principal</h4>
+                                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background-color: rgba(255, 105, 180, 0.2); color: #FFB6C1; border: 1px solid rgba(255, 105, 180, 0.3);">
+                                                        Diseño
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-3 text-xs text-slate-400">
+                                                    <div class="flex items-center gap-1">
+                                                        <i data-lucide="calendar" class="w-3 h-3"></i>
+                                                        <span>23 Dic</span>
+                                                    </div>
+                                                    <i data-lucide="grip-vertical" class="text-slate-600 w-4 h-4 cursor-move"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Features Grid -->
+    <section id="features" class="py-24 px-8 max-w-7xl mx-auto w-full">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-4">Funcionalidades Completas</h2>
+            <p class="text-slate-400 text-lg">Todo lo que necesitas para gestionar tareas y trabajar en equipo</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Feature 1: Subtareas -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 gradient-bg rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition shadow-lg shadow-purple-500/20">
+                    <i data-lucide="network" class="text-white w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Subtareas Jerárquicas</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Organiza tareas complejas dividiéndolas en subtareas. Sistema de jerarquía completo con relaciones padre-hijo.
+                </p>
+            </div>
+
+            <!-- Feature 2: Etiquetas -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-pink-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="tags" class="text-pink-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Etiquetas con Colores</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Crea etiquetas personalizadas con colores únicos. Organiza y filtra tus tareas visualmente de forma intuitiva.
+                </p>
+            </div>
+
+            <!-- Feature 3: Equipos -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-blue-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="users" class="text-blue-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Trabajo en Equipo</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Crea equipos de trabajo colaborativos. Gestiona miembros y organiza proyectos en grupo de manera eficiente.
+                </p>
+            </div>
+
+            <!-- Feature 4: Fechas -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="calendar" class="text-green-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Fechas de Finalización</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Establece fechas límite para tus tareas. Mantén el control de tus plazos y nunca pierdas una deadline.
+                </p>
+            </div>
+
+            <!-- Feature 5: Drag & Drop -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-yellow-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="move" class="text-yellow-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Reordenamiento Drag & Drop</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Arrastra y suelta para reordenar tus tareas. Prioriza de forma visual con persistencia automática.
+                </p>
+            </div>
+
+            <!-- Feature 6: Estados -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="check-circle" class="text-emerald-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Control de Estados</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Marca tareas como completadas, oculta las terminadas y mantén tu lista limpia y organizada.
+                </p>
+            </div>
+
+            <!-- Feature 7: Seguridad -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="shield" class="text-red-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Autenticación Segura</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Sistema completo de usuarios con roles (admin/usuario) y autenticación segura para proteger tus datos.
+                </p>
+            </div>
+
+            <!-- Feature 8: Persistencia -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="database" class="text-indigo-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Base de Datos PostgreSQL</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Todos tus datos persisten en PostgreSQL. Accede desde cualquier lugar sin perder información.
+                </p>
+            </div>
+
+            <!-- Feature 9: Responsive -->
+            <div class="glass-card feature-card p-8 rounded-2xl group">
+                <div
+                    class="w-14 h-14 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition">
+                    <i data-lucide="smartphone" class="text-cyan-400 w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Diseño Responsive</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Interfaz moderna y adaptable a cualquier dispositivo. Trabaja desde desktop, tablet o móvil.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="py-24 px-8 max-w-7xl mx-auto w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <h2 class="text-4xl font-bold mb-6">¿Por qué elegir MADS TodoList?</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                <i data-lucide="zap" class="w-5 h-5 text-purple-400"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Productividad Maximizada</h3>
+                            <p class="text-slate-400 text-sm">
+                                Organiza tareas complejas con subtareas, etiquetas y fechas. Todo en una sola plataforma.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                <i data-lucide="users" class="w-5 h-5 text-blue-400"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Colaboración Efectiva</h3>
+                            <p class="text-slate-400 text-sm">
+                                Trabaja en equipo de forma organizada. Gestiona proyectos colaborativos con facilidad.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <i data-lucide="trending-up" class="w-5 h-5 text-green-400"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Crecimiento Escalable</h3>
+                            <p class="text-slate-400 text-sm">
+                                Arquitectura robusta con Spring Boot y PostgreSQL preparada para crecer contigo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <a href="/login"
+                        class="gradient-bg px-8 py-4 rounded-xl font-bold inline-flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transition">
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i> Comenzar Gratis
+                    </a>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 rounded-2xl">
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>
+                            <span class="font-semibold">Tareas Completadas</span>
+                        </div>
+                        <span class="text-2xl font-bold text-green-400">128</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="list" class="w-6 h-6 text-blue-400"></i>
+                            <span class="font-semibold">Tareas Activas</span>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-400">24</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="users" class="w-6 h-6 text-purple-400"></i>
+                            <span class="font-semibold">Equipos Activos</span>
+                        </div>
+                        <span class="text-2xl font-bold text-purple-400">5</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="tags" class="w-6 h-6 text-pink-400"></i>
+                            <span class="font-semibold">Etiquetas Creadas</span>
+                        </div>
+                        <span class="text-2xl font-bold text-pink-400">18</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tech" class="py-24 px-8 max-w-7xl mx-auto w-full">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-4">Stack Tecnológico</h2>
+            <p class="text-slate-400 text-lg">Construido con las mejores tecnologías modernas</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-green-500/20 rounded-xl flex items-center justify-center group-hover:bg-green-500/30 transition">
+                    <i data-lucide="leaf" class="w-8 h-8 text-green-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Spring Boot</h3>
+                <p class="text-xs text-slate-500">Framework Backend</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-xl flex items-center justify-center group-hover:bg-blue-500/30 transition">
+                    <i data-lucide="database" class="w-8 h-8 text-blue-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">PostgreSQL</h3>
+                <p class="text-xs text-slate-500">Base de Datos</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-purple-500/20 rounded-xl flex items-center justify-center group-hover:bg-purple-500/30 transition">
+                    <i data-lucide="layout-template" class="w-8 h-8 text-purple-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Thymeleaf</h3>
+                <p class="text-xs text-slate-500">Template Engine</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-cyan-500/20 rounded-xl flex items-center justify-center group-hover:bg-cyan-500/30 transition">
+                    <i data-lucide="wind" class="w-8 h-8 text-cyan-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Tailwind CSS</h3>
+                <p class="text-xs text-slate-500">Framework CSS</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-orange-500/20 rounded-xl flex items-center justify-center group-hover:bg-orange-500/30 transition">
+                    <i data-lucide="coffee" class="w-8 h-8 text-orange-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Java 8+</h3>
+                <p class="text-xs text-slate-500">Lenguaje Backend</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 rounded-xl flex items-center justify-center group-hover:bg-yellow-500/30 transition">
+                    <i data-lucide="code" class="w-8 h-8 text-yellow-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">JavaScript</h3>
+                <p class="text-xs text-slate-500">Frontend Dinámico</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-xl flex items-center justify-center group-hover:bg-red-500/30 transition">
+                    <i data-lucide="package" class="w-8 h-8 text-red-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Maven</h3>
+                <p class="text-xs text-slate-500">Build Tool</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl text-center group hover:scale-105 transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-indigo-500/20 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/30 transition">
+                    <i data-lucide="docker" class="w-8 h-8 text-indigo-400"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Docker</h3>
+                <p class="text-xs text-slate-500">Containerización</p>
+            </div>
+        </div>
+
+        <div class="mt-16 text-center">
+            <div class="inline-flex items-center gap-8 glass-card px-8 py-6 rounded-2xl">
+                <div class="text-left">
+                    <div class="text-3xl font-bold gradient-text mb-1">100%</div>
+                    <div class="text-sm text-slate-400">Código Abierto</div>
+                </div>
+                <div class="w-px h-12 bg-slate-700"></div>
+                <div class="text-left">
+                    <div class="text-3xl font-bold gradient-text mb-1">RESTful</div>
+                    <div class="text-sm text-slate-400">API Design</div>
+                </div>
+                <div class="w-px h-12 bg-slate-700"></div>
+                <div class="text-left">
+                    <div class="text-3xl font-bold gradient-text mb-1">MVC</div>
+                    <div class="text-sm text-slate-400">Architecture</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-8 max-w-5xl mx-auto w-full text-center">
+        <div class="glass-card p-12 rounded-3xl border-2 border-purple-500/20 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10"></div>
+            <div class="relative z-10">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    ¿Listo para Organizarte?
+                </h2>
+                <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                    Únete a MADS TodoList y empieza a gestionar tus tareas de forma profesional
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/registro"
+                        class="gradient-bg px-10 py-5 rounded-xl font-bold text-lg inline-flex items-center justify-center gap-2 hover:shadow-2xl hover:shadow-purple-500/40 transition">
+                        <i data-lucide="user-plus" class="w-6 h-6"></i> Crear Cuenta Gratis
+                    </a>
+                    <a href="/login"
+                        class="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 px-10 py-5 rounded-xl font-bold text-lg inline-flex items-center justify-center gap-2 transition">
+                        <i data-lucide="log-in" class="w-6 h-6"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-12 text-center">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                        <i data-lucide="check-square" class="text-white w-6 h-6"></i>
+                    </div>
+                    <span class="text-xl font-bold">MADS TodoList</span>
+                </div>
+
+                <div class="flex gap-6 text-sm text-slate-400">
+                    <a href="#features" class="hover:text-white transition">Funcionalidades</a>
+                    <a href="#benefits" class="hover:text-white transition">Beneficios</a>
+                    <a href="#tech" class="hover:text-white transition">Tecnología</a>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-8">
+                <p class="text-slate-400 mb-2">
+                    Desarrollado con <span class="text-red-400">❤️</span> para la asignatura MADS
+                </p>
+                <p class="text-slate-600 text-sm">
+                    Spring Boot • PostgreSQL • Thymeleaf • Tailwind CSS • Docker
+                </p>
+                <p class="text-slate-700 text-xs mt-4">
+                    © 2025 MADS TodoList - Equipo 07 - Universidad de Alicante
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

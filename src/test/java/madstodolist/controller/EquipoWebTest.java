@@ -128,7 +128,7 @@ public class EquipoWebTest {
 
         this.mockMvc.perform(get(url))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("No hay usuarios en este equipo")));
+                .andExpect(content().string(containsString("No hay usuarios asignados a este equipo")));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class EquipoWebTest {
         // de que no hay usuarios
 
         this.mockMvc.perform(get(urlRedirect))
-                .andExpect(content().string(containsString("No hay usuarios en este equipo")));
+                .andExpect(content().string(containsString("No hay usuarios asignados a este equipo")));
     }
 
     @Test

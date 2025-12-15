@@ -3,51 +3,235 @@
 
 <head th:replace="fragments :: head (titulo='Registro')"></head>
 
+<head>
+    <!-- Add Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Force Dark Theme Architecture for this page's main container */
+        .login-page-wrapper {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            /* Slate 900 */
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8fafc;
+            /* Slate 50 */
+            padding-top: 60px;
+            padding-bottom: 60px;
+            /* Extra space for longer form */
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            /* Slightly wider for register form */
+            width: 100%;
+        }
+
+        /* Typography */
+        h2.login-title {
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.75rem;
+            letter-spacing: -0.025em;
+        }
+
+        /* Inputs */
+        .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+            color: #e2e8f0 !important;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Button */
+        .btn-emerald {
+            background-color: #10b981;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-emerald:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Links */
+        .auth-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .auth-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-links a:hover {
+            color: #10b981;
+        }
+
+        /* Alerts */
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            padding: 1rem;
+            list-style-type: none;
+            margin-bottom: 0;
+            margin-top: 1rem;
+        }
+
+        .alert-danger li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* LIGHT MODE OVERRIDES */
+        [data-bs-theme="light"] .login-page-wrapper {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] h2.login-title {
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0;
+            color: #1e293b !important;
+        }
+
+        [data-bs-theme="light"] .form-control:focus {
+            background-color: #ffffff !important;
+        }
+
+        [data-bs-theme="light"] .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        [data-bs-theme="light"] label {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .auth-links a {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .auth-links a:hover {
+            color: #10b981;
+        }
+
+        [data-bs-theme="light"] .alert-danger {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
 <body>
-<div class="container-fluid">
+    <div th:replace="~{navbar}"></div>
 
-    <div class="row justify-content-center mb-3">
-        <div class="col-auto">
-            <h2>Registro nuevo usuario</h2>
+    <div class="login-page-wrapper">
+        <!-- Decorative Background Blob -->
+        <div
+            style="position: absolute; width: 400px; height: 400px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; filter: blur(80px); z-index: -1; top: 20%; right: 20%;">
         </div>
-    </div>
+        <div
+            style="position: absolute; width: 300px; height: 300px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; filter: blur(80px); z-index: -1; bottom: 20%; left: 20%;">
+        </div>
 
-    <div class="row justify-content-center">
-        <div class="col-6">
+        <div class="glass-card">
+            <h2 class="login-title">Crear cuenta</h2>
+
             <form method="post" th:action="@{/registro}" th:object="${registroData}">
-                <div class="row justify-content-center">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label for="eMail">Correo electrónico</label>
-                            <input id="eMail" class="form-control" name="eMail" placeholder="Correo electrónico"
-                                   type="text" th:field="*{email}" required/>
-                        </div>
-                        <div class="form-group">
-                            <label for="nombre">Nombre</label>
-                            <input id="nombre" class="form-control" name="nombre" placeholder="Nombre" type="text"
-                                   th:field="*{nombre}"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Contraseña</label>
-                            <input id="password" class="form-control" name="password" placeholder="Contraseña"
-                                   type="password" th:field="*{password}" required/>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="fechaNacimiento">Fecha de nacimiento</label>
-                            <input id="fechaNacimiento" class="form-control" name="fechaNacimiento"
-                                   placeholder="01-12-2019" th:field="*{fechaNacimiento}"/>
-                        </div>
+                <div class="form-group">
+                    <label for="eMail">Correo electrónico</label>
+                    <input id="eMail" class="form-control" name="eMail" placeholder="ej. usuario@email.com" type="text"
+                        th:field="*{email}" required />
+                </div>
 
-                        <button type="submit" class="btn btn-primary">Registro</button>
-                        <a class="btn btn-link" href="/login">Ir a login</a>
-                    </div>
+                <div class="form-group">
+                    <label for="nombre">Nombre completo</label>
+                    <input id="nombre" class="form-control" name="nombre" placeholder="Tu nombre" type="text"
+                        th:field="*{nombre}" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input id="password" class="form-control" name="password" placeholder="Crea una contraseña segura"
+                        type="password" th:field="*{password}" required />
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="fechaNacimiento">Fecha de nacimiento</label>
+                    <input id="fechaNacimiento" class="form-control" name="fechaNacimiento" placeholder="dd-mm-aaaa"
+                        th:field="*{fechaNacimiento}" />
+                </div>
+
+                <button type="submit" class="btn btn-emerald">Registrarse</button>
+
+                <div class="auth-links">
+                    <a href="/login">¿Ya tienes cuenta? Inicia sesión</a>
                 </div>
             </form>
-        </div>
-    </div>
-    <div class="row mt-3 justify-content-center">
-        <div class="col-9">
+
             <div th:object="${registroData}">
                 <ul th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
                     <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
@@ -58,9 +242,8 @@
             </ul>
         </div>
     </div>
-</div>
 
-<div th:replace="fragments::javascript"/>
-
+    <div th:replace="fragments::javascript" />
 </body>
+
 </html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments :: head (titulo='Papelera')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Page Style (Dark Theme Default) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism for Task Items */
+        .glass-task {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .glass-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Text Colors */
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Titles inside tasks */
+        .h5.font-weight-bold {
+            color: #e2e8f0;
+        }
+
+        /* Light Mode Overrides */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-task {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .text-muted {
+            color: #64748b !important;
+        }
+
+        [data-bs-theme="light"] .h5.font-weight-bold {
+            color: #0f172a;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{navbar}"></div>
+    <div class="container-fluid" style="padding-top: 20px;">
+
+        <div class="row mt-3 mb-4">
+            <div class="col d-flex justify-content-between align-items-center">
+                <h2 th:text="'Papelera de ' + ${usuario.nombre}"></h2>
+                <div th:if="${!tareas.empty}">
+                    <button type="submit" id="btnRestaurarSeleccionadas" class="btn btn-sm shadow-sm font-weight-bold ml-2"
+                        style="background-color: #10b981; color: white; border: none; border-radius: 9999px; padding: 8px 16px;"
+                        form="formTareasBorradas" formaction="/tareas/restaurar-batch"
+                        disabled>
+                        <i class="fas fa-trash-restore"></i> Restaurar seleccionadas
+                    </button>
+                    <button type="submit" id="btnEliminarDefinitivamente" class="btn btn-sm btn-danger shadow-sm font-weight-bold ml-2"
+                        style="border-radius: 9999px; padding: 8px 16px;" form="formTareasBorradas"
+                        formaction="/tareas/borrar-definitivamente-batch"
+                        onclick="return confirm('¿Estás seguro de que quieres eliminar definitivamente estas tareas? Esta acción no se puede deshacer.')"
+                        disabled>
+                        <i class="fas fa-times"></i> Eliminar definitivamente
+                    </button>
+                    <a class="btn btn-sm btn-outline-secondary shadow-sm font-weight-bold ml-2"
+                        style="border-radius: 9999px; padding: 8px 16px;"
+                        th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div th:if="${tareas.empty}">
+                    <a class="btn btn-sm btn-outline-secondary shadow-sm font-weight-bold"
+                        style="border-radius: 9999px; padding: 8px 16px;"
+                        th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}">
+                        <i class="fas fa-arrow-left"></i> Volver listado
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col">
+                <div class="alert glass-task text-center" th:if="${tareas.empty}"
+                    style="border-left: 4px solid #3b82f6;">
+                    <i class="fas fa-info-circle"></i> No hay tareas en la papelera.
+                </div>
+
+                <form method="post" id="formTareasBorradas" th:if="${!tareas.empty}">
+
+                    <!-- Select All Checkbox Container -->
+                    <div class="mb-3 p-2">
+                        <div class="custom-control custom-checkbox text-muted">
+                            <input type="checkbox" class="custom-control-input" id="selectAll">
+                            <label class="custom-control-label" for="selectAll" style="cursor:pointer;">Seleccionar
+                                todo</label>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush pb-5" style="border-radius: 1rem;">
+                        <div th:each="tarea : ${tareas}" class="list-group-item p-0 border-0 mb-2"
+                            style="background: transparent;">
+                            <div class="d-flex align-items-center border rounded p-3 glass-task shadow-sm"
+                                style="border-left: 6px solid #ef4444 !important;">
+
+                                <!-- Checkbox -->
+                                <div class="mr-3">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input task-checkbox" name="ids"
+                                            th:value="${tarea.id}" th:id="'check-' + ${tarea.id}"
+                                            th:attr="data-puede-restaurarse=${puedeRestaurarseMap != null ? puedeRestaurarseMap.get(tarea.id) : true}">
+                                        <label class="custom-control-label" th:for="'check-' + ${tarea.id}"></label>
+                                    </div>
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <span class="h5 font-weight-bold" th:text="${tarea.titulo}"></span>
+
+                                    <!-- Etiquetas -->
+                                    <span th:each="etiqueta : ${tarea.etiquetas}" class="badge badge-pill ml-1"
+                                        th:text="${etiqueta.nombre}"
+                                        th:style="'background-color: ' + ${etiqueta.color} + '; color: white;'">
+                                    </span>
+
+                                    <!-- Fecha de finalización -->
+                                    <span th:if="${tarea.fechaFinalizacion != null}" class="text-muted ml-2">
+                                        <small>Vence: <span
+                                                th:text="${#temporals.format(tarea.fechaFinalizacion, 'dd-MM-yyyy')}"></span></small>
+                                    </span>
+                                    
+                                    <!-- Mensaje de advertencia si no se puede restaurar -->
+                                    <div th:if="${puedeRestaurarseMap != null && !puedeRestaurarseMap.get(tarea.id)}" 
+                                         class="mt-2">
+                                        <small class="text-warning">
+                                            <i class="fas fa-exclamation-triangle"></i> 
+                                            No se puede restaurar: la tarea padre está borrada. Restaure primero la tarea padre.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    <button type="submit" class="btn btn-sm shadow-sm"
+                                        th:formaction="@{/tareas/{id}/restaurar(id=${tarea.id})}"
+                                        th:disabled="${puedeRestaurarseMap != null && !puedeRestaurarseMap.get(tarea.id)}"
+                                        th:style="${puedeRestaurarseMap != null && !puedeRestaurarseMap.get(tarea.id)} ? 
+                                            'cursor: not-allowed; background-color: #6b7280; color: white; border: none; border-radius: 9999px; opacity: 0.6;' : 
+                                            'cursor: pointer; background-color: #10b981; color: white; border: none; border-radius: 9999px;'">
+                                        <i class="fas fa-trash-restore"></i> Restaurar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col">
+                <div class="alert alert-success alert-dismissible fade show shadow-sm glass-task" role="alert"
+                    th:if="${!#strings.isEmpty(mensaje)}" style="border-left: 4px solid #10b981;">
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="close text-white" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm glass-task" role="alert"
+                    th:if="${!#strings.isEmpty(error)}" style="border-left: 4px solid #ef4444;">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close text-white" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments::javascript" />
+    <script>
+        // Función para verificar si hay checkboxes seleccionados y habilitar/deshabilitar los botones
+        function actualizarEstadoBotones() {
+            var checkboxes = document.getElementsByClassName('task-checkbox');
+            var btnEliminar = document.getElementById('btnEliminarDefinitivamente');
+            var btnRestaurar = document.getElementById('btnRestaurarSeleccionadas');
+            var haySeleccionados = false;
+            var haySeleccionadosRestaurables = false;
+            
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    haySeleccionados = true;
+                    // Verificar si la tarea puede restaurarse
+                    var puedeRestaurarse = checkboxes[i].getAttribute('data-puede-restaurarse') === 'true';
+                    if (puedeRestaurarse) {
+                        haySeleccionadosRestaurables = true;
+                    }
+                }
+            }
+            
+            // Actualizar botón Eliminar definitivamente (puede eliminar cualquier tarea)
+            if (btnEliminar) {
+                btnEliminar.disabled = !haySeleccionados;
+                if (btnEliminar.disabled) {
+                    btnEliminar.style.opacity = '0.5';
+                    btnEliminar.style.cursor = 'not-allowed';
+                } else {
+                    btnEliminar.style.opacity = '1';
+                    btnEliminar.style.cursor = 'pointer';
+                }
+            }
+            
+            // Actualizar botón Restaurar seleccionadas (solo si hay tareas restaurables seleccionadas)
+            if (btnRestaurar) {
+                btnRestaurar.disabled = !haySeleccionadosRestaurables;
+                if (btnRestaurar.disabled) {
+                    btnRestaurar.style.opacity = '0.5';
+                    btnRestaurar.style.cursor = 'not-allowed';
+                } else {
+                    btnRestaurar.style.opacity = '1';
+                    btnRestaurar.style.cursor = 'pointer';
+                }
+            }
+        }
+
+        // Event listener para "Seleccionar todo"
+        var selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                var checkboxes = document.getElementsByClassName('task-checkbox');
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = this.checked;
+                }
+                actualizarEstadoBotones();
+            });
+        }
+
+            // Event listeners para cada checkbox individual
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkboxes = document.getElementsByClassName('task-checkbox');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].addEventListener('change', function() {
+                    actualizarEstadoBotones();
+                    // Actualizar el estado de "Seleccionar todo" si es necesario
+                    var selectAll = document.getElementById('selectAll');
+                    if (selectAll) {
+                        var todosSeleccionados = true;
+                        for (var j = 0; j < checkboxes.length; j++) {
+                            if (!checkboxes[j].checked) {
+                                todosSeleccionados = false;
+                                break;
+                            }
+                        }
+                        selectAll.checked = todosSeleccionados;
+                    }
+                });
+            }
+            // Inicializar el estado de los botones al cargar la página
+            actualizarEstadoBotones();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,44 +1,243 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head th:replace="fragments :: head (titulo='Login')">
+</head>
+
+<!-- We add a specific class to body to target this page's unique style demands if needed -->
+<!-- However, since fragments::head brings in bootstrap and our global theme logic, 
+     we will use inline styles or specific classes to override. -->
+
+<head>
+    <!-- Add Inter Font like in Landing Page -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Force Dark Theme Architecture for this page's main container */
+        .login-page-wrapper {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            /* Slate 900 */
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8fafc;
+            /* Slate 50 */
+            padding-top: 60px;
+            /* Space for fixed navbar if needed, though navbar is top */
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            /* Slightly darker for better contrast */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* Typography */
+        h2.login-title {
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: -0.025em;
+        }
+
+        /* Inputs - Neumorphism/Dark Modern */
+        .form-control {
+            background-color: #0f172a !important;
+            /* Slate 900 */
+            border: 1px solid #334155;
+            /* Slate 700 */
+            color: #e2e8f0 !important;
+            /* Slate 200 */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            /* Emerald 500 */
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+            /* Slate 500 */
+        }
+
+        /* Labels */
+        label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #94a3b8;
+            /* Slate 400 */
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Primary Button */
+        .btn-emerald {
+            background-color: #10b981;
+            /* Emerald 500 */
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-emerald:hover {
+            background-color: #059669;
+            /* Emerald 600 */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Links */
+        .auth-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .auth-links a {
+            color: #94a3b8;
+            /* Slate 400 */
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-links a:hover {
+            color: #10b981;
+            /* Emerald 500 */
+        }
+
+        /* Error Alert */
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        /* LIGHT MODE OVERRIDES */
+        [data-bs-theme="light"] .login-page-wrapper {
+            background-color: #F4F6F9;
+            /* Blanco Niebla */
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+            /* Slate 800 */
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-bs-theme="light"] h2.login-title {
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0;
+            color: #1e293b !important;
+        }
+
+        [data-bs-theme="light"] .form-control:focus {
+            background-color: #ffffff !important;
+            /* Keep emerald focus but ensure border visibility */
+        }
+
+        [data-bs-theme="light"] .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        [data-bs-theme="light"] label {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .auth-links a {
+            color: #64748b;
+        }
+
+        [data-bs-theme="light"] .auth-links a:hover {
+            color: #10b981;
+        }
+
+        [data-bs-theme="light"] .alert-danger {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+    </style>
+</head>
 
 <body>
-<div class="container-fluid">
+    <!-- Navbar (Fragment) -->
+    <div th:replace="~{navbar}"></div>
 
-    <div class="row justify-content-center mb-3">
-        <div class="col-auto">
-            <h2>Login</h2>
+    <!-- Main Wrapper with Dark Theme -->
+    <div class="login-page-wrapper">
+
+        <!-- Decorative Background Blob -->
+        <div
+            style="position: absolute; width: 300px; height: 300px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; filter: blur(80px); z-index: -1;">
         </div>
-    </div>
 
-    <div class="row justify-content-center">
-        <div class="col-6">
+        <div class="glass-card">
+            <h2 class="login-title">Bienvenido</h2>
+
             <form method="post" th:action="@{/login}" th:object="${loginData}">
-                <div class="row justify-content-center">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label for="eMail">Usuario</label>
-                            <input id="eMail" class="form-control" name="eMail" placeholder="Correo electrónico" type="text" th:field="*{eMail}" required/>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Contraseña</label>
-                            <input id="password" class="form-control" name="password"  placeholder="Contraseña" type="password" th:field="*{password}" required/>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <a class="btn btn-link" href="/registro">Ir a registro</a>
-                        <a class="btn btn-link" href="/about">Acerca de</a>
+
+                <div class="form-group mb-3">
+                    <label for="eMail">Correo electrónico</label>
+                    <input id="eMail" class="form-control" name="eMail" placeholder="ej. usuario@email.com" type="text"
+                        th:field="*{eMail}" required />
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="password">Contraseña</label>
+                    <input id="password" class="form-control" name="password" placeholder="••••••••" type="password"
+                        th:field="*{password}" required />
+                </div>
+
+                <button type="submit" class="btn btn-emerald">Iniciar sesión</button>
+
+                <div class="auth-links">
+                    <a href="/registro">¿No tienes cuenta? Regístrate gratis</a>
+                    <!-- separator? -->
+                    <a href="/about">Acerca de MADS ToDo</a>
+                </div>
             </form>
-        </div>
-    </div>
-    <div class="row mt-3 justify-content-center">
-        <div class="col-6">
+
             <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
         </div>
     </div>
-</div>
 
-<div th:replace="fragments::javascript"/>
-
+    <div th:replace="fragments::javascript" />
 </body>
+
 </html>

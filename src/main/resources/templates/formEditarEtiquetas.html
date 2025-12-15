@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments :: head (titulo='Editar Etiquetas')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center; /* Título centrado */
+        }
+
+        /* El recuadro de la fila */
+        .glass-label {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .glass-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-row {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            padding-left: 1rem; /* Alinear con el padding interno de glass-label */
+        }
+
+        /* Inputs */
+        .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+            color: #e2e8f0 !important;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .select-color {
+            width: auto !important;
+            min-width: 140px;
+            max-width: 180px;
+        }
+
+        .color-preview {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+            margin-right: 0.5rem !important;
+        }
+
+        .color-preview:hover { transform: scale(1.1); }
+
+        /* Botones */
+        .btn-nueva-etiqueta {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+        .btn-nueva-etiqueta:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+
+        .btn-guardar {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-guardar:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-cancelar {
+            background-color: transparent;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            border-radius: 0.5rem;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-cancelar:hover {
+            background-color: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Light Mode */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+        [data-bs-theme="light"] h2 { background: none; -webkit-text-fill-color: initial; color: #0f172a; }
+        [data-bs-theme="light"] .glass-label {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        [data-bs-theme="light"] .header-row { color: #64748b; }
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1;
+            color: #1e293b !important;
+        }
+        [data-bs-theme="light"] .form-control:focus {
+            background-color: #ffffff !important;
+            border-color: #10b981;
+        }
+        [data-bs-theme="light"] .color-preview { border: 2px solid rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{navbar}"></div>
+
+<div class="container mt-5 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <h2 class="mb-4">Modificar Etiquetas</h2>
+
+            <form method="post" th:action="@{/usuarios/{id}/etiquetas(id=${usuario.id})}" th:object="${etiquetaData}">
+
+                <div id="lista-etiquetas">
+                    <div class="row header-row">
+                        <div class="col-6">Nombre</div>
+                        <div class="col-6">Color</div>
+                    </div>
+
+                    <div th:each="etiqueta, itemStat : *{etiquetas}" class="glass-label fila-etiqueta">
+                        <input type="hidden" th:field="*{etiquetas[__${itemStat.index}__].id}" />
+
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <input type="text" class="form-control" maxlength="15" required
+                                       th:field="*{etiquetas[__${itemStat.index}__].nombre}"
+                                       placeholder="Nombre de la etiqueta" />
+                            </div>
+
+                            <div class="col-6 d-flex align-items-center">
+                                <div class="color-preview rounded me-4"
+                                     style="width: 32px; height: 32px; flex-shrink: 0;"
+                                     th:styleappend="'background-color: ' + *{etiquetas[__${itemStat.index}__].color}">
+                                </div>
+
+                                <select class="form-control select-color"
+                                        th:field="*{etiquetas[__${itemStat.index}__].color}" onchange="actualizarColor(this)">
+                                    <option th:each="colorEntry : ${colores}" th:value="${colorEntry.value}"
+                                            th:text="${colorEntry.key}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center"> <div class="mb-4">
+                    <button type="button" class="btn btn-nueva-etiqueta" onclick="nuevaEtiqueta()">
+                        <i class="fas fa-plus"></i> Nueva etiqueta
+                    </button>
+                </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-guardar mr-2">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        <a th:href="@{/usuarios/{id}/tareas(id=${usuario.id})}" class="btn btn-cancelar">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments::javascript"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var mapColores = /*[[${colores}]]*/ {};
+    /*]]>*/
+
+    function actualizarColor(select) {
+        var color = select.value;
+        var preview = select.previousElementSibling;
+        preview.style.backgroundColor = color;
+    }
+
+    function nuevaEtiqueta() {
+        var container = document.getElementById('lista-etiquetas');
+        var index = container.getElementsByClassName('fila-etiqueta').length;
+
+        var opciones = '';
+        for (var nombreColor in mapColores) {
+            var hex = mapColores[nombreColor];
+            opciones += `<option value="${hex}">${nombreColor}</option>`;
+        }
+        var primerHex = Object.values(mapColores)[0];
+
+        var html = `
+            <div class="glass-label fila-etiqueta">
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <input type="text" class="form-control" maxlength="15" required
+                               name="etiquetas[${index}].nombre" placeholder="Nueva etiqueta"/>
+                    </div>
+                    <div class="col-6 d-flex align-items-center">
+                        <div class="color-preview rounded me-4"
+                             style="width: 32px; height: 32px; flex-shrink: 0; background-color: ${primerHex};">
+                        </div>
+                        <select class="form-control select-color"
+                                name="etiquetas[${index}].color"
+                                onchange="actualizarColor(this)">
+                            ${opciones}
+                        </select>
+                    </div>
+                </div>
+            </div>`;
+
+        container.insertAdjacentHTML('beforeend', html);
+    }
+</script>
+
+</body>
+
+</html>

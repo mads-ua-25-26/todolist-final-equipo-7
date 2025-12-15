@@ -1,30 +1,294 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments :: head (titulo='Login')"></head>
+<head>
+    <th:block th:replace="fragments :: head (titulo='Editar Tarea')"></th:block>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base (Modo Oscuro por defecto) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Tarjeta con efecto cristal (Glassmorphism) */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            color: white;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        h6 {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        label {
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Inputs modernos */
+        .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+            color: #e2e8f0 !important;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a !important;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        /* Botones */
+        .btn-emerald {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 10px 24px;
+            transition: all 0.2s;
+        }
+
+        .btn-emerald:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        .text-emerald {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .text-emerald:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        /* Badge de etiquetas */
+        .etiqueta-badge {
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .etiqueta-badge:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* MODO CLARO (Sobreescritura) */
+        [data-bs-theme="light"] body {
+            background-color: #F4F6F9;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        [data-bs-theme="light"] h2 {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: #0f172a;
+        }
+
+        [data-bs-theme="light"] label {
+            color: #475569;
+        }
+
+        [data-bs-theme="light"] .form-control {
+            background-color: #ffffff !important;
+            border: 1px solid #ced4da;
+            color: #495057 !important;
+        }
+
+        [data-bs-theme="light"] .form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
 
 <body>
-<div class="container-fluid">
 
-    <h2 th:text="'Modificación de la tarea ' + ${tarea.getId()}"></h2>
+<div th:replace="~{navbar}"></div>
 
-    <form method="post" th:action="@{/tareas/{id}/editar(id=${tarea.id})}" th:object="${tareaData}">
-        <div class="col-6">
-        <div class="form-group">
-            <label for="titulo">Título de la tarea:</label>
-            <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}" type="text"/>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="glass-card p-5">
+
+                <h2 class="text-center">Modificar Tarea</h2>
+
+                <form method="post" th:action="@{/tareas/{id}/editar(id=${tarea.id})}" th:object="${tareaData}">
+
+                    <div class="form-group mb-4">
+                        <label for="titulo">Título de la tarea</label>
+                        <input class="form-control" id="titulo" name="titulo" required th:field="*{titulo}"
+                               type="text" placeholder="Ej: Estudiar MADS" />
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="fechaFinalizacion">Fecha de finalización</label>
+                        <input class="form-control" id="fechaFinalizacion" name="fechaFinalizacion"
+                               th:field="*{fechaFinalizacion}" type="date" />
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="select-etiquetas">Etiquetas</label>
+                        <select class="form-control" id="select-etiquetas" onchange="agregarEtiqueta(this)">
+                            <option value="" selected disabled>Añadir etiqueta...</option>
+                            <option th:each="etiqueta : ${etiquetas}" th:value="${etiqueta.id}"
+                                    th:text="${etiqueta.nombre}" th:data-color="${etiqueta.color}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div id="etiquetas-seleccionadas" class="mb-4">
+                            <span th:each="etiquetaTarea : ${tarea.etiquetas}"
+                                  class="badge badge-pill mr-2 mb-2 p-2 etiqueta-badge"
+                                  th:attr="data-id=${etiquetaTarea.id}, data-color=${etiquetaTarea.color}"
+                                  th:style="'background-color: ' + ${etiquetaTarea.color} + '; color: white; cursor: pointer;'">
+                                <span th:text="${etiquetaTarea.nombre} + ' ×'"></span>
+                                <input type="hidden" name="etiquetaIds" th:value="${etiquetaTarea.id}" />
+                            </span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="descripcion">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
+                                  th:field="*{descripcion}" placeholder="Detalles de la tarea..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between align-items-center mt-5">
+                        <a class="text-emerald" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}" style="text-decoration: none;">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button class="btn btn-emerald shadow" type="submit">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="descripcion">Descripción de la tarea:</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit">Modificar tarea</button>
-        <a class="btn btn-link" th:href="@{/usuarios/{id}/tareas(id=${tarea.usuarioId})}">Cancelar</a>
-        </div>
-    </form>
+    </div>
 </div>
 
-<div th:replace="fragments::javascript"/>
+<div th:replace="fragments::javascript"></div>
+
+<script>
+    const etiquetasSeleccionadas = new Set();
+
+    // Al cargar, llenamos el Set con las etiquetas que ya traía la tarea
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll('input[name="etiquetaIds"]');
+        inputs.forEach(input => {
+            etiquetasSeleccionadas.add(String(input.value));
+        });
+    });
+
+    // Función para agregar una etiqueta desde el select
+    function agregarEtiqueta(select) {
+        const option = select.options[select.selectedIndex];
+        const id = option.value;
+        const nombre = option.text;
+        const color = option.getAttribute('data-color');
+
+        if (!id) {
+            select.value = "";
+            return;
+        }
+
+        // Evitar duplicados visuales y lógicos
+        if (etiquetasSeleccionadas.has(String(id))) {
+            select.value = "";
+            return;
+        }
+
+        etiquetasSeleccionadas.add(String(id));
+
+        const container = document.getElementById('etiquetas-seleccionadas');
+
+        // Crear el badge visualmente idéntico a los generados por Thymeleaf
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-pill mr-2 mb-2 p-2 etiqueta-badge';
+        badge.setAttribute('data-id', id);
+        badge.style.backgroundColor = color || '#6c757d';
+        badge.style.color = 'white';
+        badge.style.cursor = 'pointer';
+
+        // Texto visible
+        const texto = document.createElement('span');
+        texto.textContent = nombre + ' ×';
+        badge.appendChild(texto);
+
+        // Input hidden para enviar al servidor
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'etiquetaIds';
+        input.value = id;
+        badge.appendChild(input);
+
+        // Añadir al DOM
+        container.appendChild(badge);
+
+        // Resetear select
+        select.value = "";
+    }
+
+    // Event delegation para borrar al hacer click (funciona para las nuevas y las viejas)
+    document.getElementById('etiquetas-seleccionadas').addEventListener('click', function (ev) {
+        let target = ev.target;
+        // Bubbling hasta encontrar la clase etiqueta-badge
+        while (target && !target.classList.contains('etiqueta-badge')) {
+            target = target.parentElement;
+        }
+        if (!target) return;
+
+        const id = target.getAttribute('data-id');
+        if (!id) return;
+
+        // Eliminar del Set
+        etiquetasSeleccionadas.delete(String(id));
+
+        // Eliminar del DOM
+        target.remove();
+    });
+</script>
 
 </body>
+
 </html>

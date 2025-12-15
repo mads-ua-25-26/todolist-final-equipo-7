@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: mads-postgres
+    environment:
+      POSTGRES_DB: mads
+      POSTGRES_USER: mads
+      POSTGRES_PASSWORD: mads
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mads"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  todolist-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mads-todolist-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=postgres-prod
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - DB_USER=mads
+      - DB_PASSWD=mads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
