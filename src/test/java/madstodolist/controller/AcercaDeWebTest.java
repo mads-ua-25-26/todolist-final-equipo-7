@@ -48,7 +48,7 @@ public class AcercaDeWebTest {
         public void getLandingPageReturnsContent() throws Exception {
                 this.mockMvc.perform(get("/"))
                                 .andExpect(status().isOk())
-                                .andExpect(content().string(containsString("Deja de olvidar cosas")));
+                                .andExpect(content().string(containsString("Organiza tus tareas")));
         }
 
         @Test
